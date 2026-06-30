@@ -91,12 +91,18 @@ export default function Step1() {
         keyboardType="email-address"
       />
 
-      <TouchableOpacity style={styles.checkboxRow} onPress={() => setTermsAccepted(!termsAccepted)}>
-        <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]} />
+      <View style={styles.checkboxRow}>
+        <TouchableOpacity onPress={() => setTermsAccepted(!termsAccepted)}>
+          <View style={[styles.checkbox, termsAccepted && styles.checkboxChecked]} />
+        </TouchableOpacity>
         <Text style={styles.checkboxText}>
-          Kullanım Koşulları ve Gizlilik Politikası'nı okudum, kabul ediyorum.
+          <Text onPress={() => setTermsAccepted(!termsAccepted)}>
+            Kullanım Koşulları ve Gizlilik Politikası'
+          </Text>
+          <Text style={styles.linkText} onPress={() => router.push('/terms')}>nı okudum</Text>
+          <Text onPress={() => setTermsAccepted(!termsAccepted)}>, kabul ediyorum.</Text>
         </Text>
-      </TouchableOpacity>
+      </View>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -120,6 +126,7 @@ const styles = StyleSheet.create({
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#FB923C', marginTop: 2 },
   checkboxChecked: { backgroundColor: '#FB923C' },
   checkboxText: { flex: 1, fontSize: 12, color: '#9A6B4B', lineHeight: 18 },
+  linkText: { color: '#FB923C', fontWeight: '700', textDecorationLine: 'underline' },
   errorText: { color: '#DC2626', fontSize: 13, marginTop: 12 },
   button: {
     backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
