@@ -1,5 +1,5 @@
-import { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView } from 'react-native';
+import { useEffect, useState, useCallback, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView, PanResponder, Animated, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
 
@@ -13,6 +13,8 @@ type DogCard = {
 };
 
 const BREEDS = ['Golden Retriever', 'Labrador', 'Husky', 'Corgi', 'Poodle', 'Bulldog', 'Pomeranian', 'Diğer'];
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const SWIPE_THRESHOLD = 120;
 
 export default function Home() {
   const router = useRouter();
@@ -28,6 +30,9 @@ export default function Home() {
   const [filterGender, setFilterGender] = useState<'male' | 'female' | null>(null);
   const [filterMinAge, setFilterMinAge] = useState(0);
   const [filterMaxAge, setFilterMaxAge] = useState(20);
+
+  const pan = useRef(new Animated.ValueXY()).current;
+  const swipingRef = useRef(false);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -70,12 +75,8 @@ export default function Home() {
       .gte('age', filterMinAge)
       .lte('age', filterMaxAge);
 
-    if (filterBreed) {
-      query = query.eq('breed', filterBreed);
-    }
-    if (filterGender) {
-      query = query.eq('gender', filterGender);
-    }
+    if (filterBreed) query = query.eq('breed', filterBreed);
+    if (filterGender) query = query.eq('gender', filterGender);
 
     const { data: otherDogs, error: dogsError } = await query;
 
@@ -98,6 +99,7 @@ export default function Home() {
 
     setCards(filtered);
     setCurrentIndex(0);
+    pan.setValue({ x: 0, y: 0 });
     setLoading(false);
   }, [router, filterBreed, filterGender, filterMinAge, filterMaxAge]);
 
@@ -106,7 +108,8 @@ export default function Home() {
   }, [loadData]);
 
   async function handleSwipe(action: 'like' | 'dislike') {
-    if (!myDogId || currentIndex >= cards.length) return;
+    if (!myDogId || currentIndex >= cards.length || swipingRef.current) return;
+    swipingRef.current = true;
 
     const targetDog = cards[currentIndex];
 
@@ -118,6 +121,7 @@ export default function Home() {
 
     if (swipeError) {
       setError('Bir hata oluştu: ' + swipeError.message);
+      swipingRef.current = false;
       return;
     }
 
@@ -130,12 +134,43 @@ export default function Home() {
 
       if (matchData && matchData.length > 0) {
         setMatchInfo(targetDog);
+        pan.setValue({ x: 0, y: 0 });
+        swipingRef.current = false;
         return;
       }
     }
 
+    pan.setValue({ x: 0, y: 0 });
     setCurrentIndex(prev => prev + 1);
+    swipingRef.current = false;
   }
+
+  function animateSwipeOut(direction: 'like' | 'dislike') {
+    const toX = direction === 'like' ? SCREEN_WIDTH * 1.5 : -SCREEN_WIDTH * 1.5;
+    Animated.timing(pan, {
+      toValue: { x: toX, y: 0 },
+      duration: 250,
+      useNativeDriver: false,
+    }).start(() => handleSwipe(direction));
+  }
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5,
+      onPanResponderMove: (_, gesture) => {
+        pan.setValue({ x: gesture.dx, y: gesture.dy });
+      },
+      onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx > SWIPE_THRESHOLD) {
+          animateSwipeOut('like');
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          animateSwipeOut('dislike');
+        } else {
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+        }
+      },
+    })
+  ).current;
 
   function closeMatch() {
     setMatchInfo(null);
@@ -191,7 +226,6 @@ export default function Home() {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <Text style={styles.modalTitle}>Filtrele</Text>
-
           <ScrollView>
             <Text style={styles.filterLabel}>IRK</Text>
             <View style={styles.chipRow}>
@@ -205,7 +239,6 @@ export default function Home() {
                 </TouchableOpacity>
               ))}
             </View>
-
             <Text style={styles.filterLabel}>CİNSİYET</Text>
             <View style={styles.chipRow}>
               {(['female', 'male'] as const).map(g => (
@@ -220,7 +253,6 @@ export default function Home() {
                 </TouchableOpacity>
               ))}
             </View>
-
             <Text style={styles.filterLabel}>YAŞ ARALIĞI: {filterMinAge} - {filterMaxAge}</Text>
             <View style={styles.ageRow}>
               {[0, 2, 5, 10, 15, 20].map(age => (
@@ -234,7 +266,6 @@ export default function Home() {
               ))}
             </View>
           </ScrollView>
-
           <View style={styles.modalActions}>
             <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
               <Text style={styles.clearButtonText}>Temizle</Text>
@@ -266,6 +297,23 @@ export default function Home() {
   const current = cards[currentIndex];
   const photoUrl = current.photos[0]?.url;
 
+  const rotate = pan.x.interpolate({
+    inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
+    outputRange: ['-15deg', '0deg', '15deg'],
+  });
+
+  const likeOpacity = pan.x.interpolate({
+    inputRange: [0, SWIPE_THRESHOLD],
+    outputRange: [0, 1],
+    extrapolate: 'clamp',
+  });
+
+  const nopeOpacity = pan.x.interpolate({
+    inputRange: [-SWIPE_THRESHOLD, 0],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={styles.container}>
       {renderFilterModal()}
@@ -277,7 +325,15 @@ export default function Home() {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.card}>
+      <Animated.View
+        style={[
+          styles.card,
+          {
+            transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate }],
+          },
+        ]}
+        {...panResponder.panHandlers}
+      >
         {photoUrl ? (
           <Image source={{ uri: photoUrl }} style={styles.cardImage} />
         ) : (
@@ -285,17 +341,25 @@ export default function Home() {
             <Text>📷</Text>
           </View>
         )}
+
+        <Animated.View style={[styles.likeLabel, { opacity: likeOpacity }]}>
+          <Text style={styles.likeLabelText}>LIKE</Text>
+        </Animated.View>
+        <Animated.View style={[styles.nopeLabel, { opacity: nopeOpacity }]}>
+          <Text style={styles.nopeLabelText}>NOPE</Text>
+        </Animated.View>
+
         <View style={styles.cardInfo}>
           <Text style={styles.cardName}>{current.name}, {current.age}</Text>
           <Text style={styles.cardBreed}>{current.breed}</Text>
         </View>
-      </View>
+      </Animated.View>
 
       <View style={styles.actions}>
-        <TouchableOpacity style={[styles.actionButton, styles.dislikeButton]} onPress={() => handleSwipe('dislike')}>
+        <TouchableOpacity style={[styles.actionButton, styles.dislikeButton]} onPress={() => animateSwipeOut('dislike')}>
           <Text style={styles.actionIcon}>✕</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={[styles.actionButton, styles.likeButton]} onPress={() => handleSwipe('like')}>
+        <TouchableOpacity style={[styles.actionButton, styles.likeButton]} onPress={() => animateSwipeOut('like')}>
           <Text style={styles.actionIcon}>♥</Text>
         </TouchableOpacity>
       </View>
@@ -315,6 +379,10 @@ const styles = StyleSheet.create({
   cardInfo: { padding: 16 },
   cardName: { fontSize: 20, fontWeight: '800', color: '#431407' },
   cardBreed: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
+  likeLabel: { position: 'absolute', top: 40, left: 20, borderWidth: 4, borderColor: '#22C55E', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '-20deg' }] },
+  likeLabelText: { color: '#22C55E', fontSize: 28, fontWeight: '900' },
+  nopeLabel: { position: 'absolute', top: 40, right: 20, borderWidth: 4, borderColor: '#EF4444', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '20deg' }] },
+  nopeLabelText: { color: '#EF4444', fontSize: 28, fontWeight: '900' },
   actions: { flexDirection: 'row', gap: 24, marginTop: 32 },
   actionButton: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
   dislikeButton: { backgroundColor: 'white', borderWidth: 2, borderColor: '#FCA5A5' },
@@ -325,9 +393,7 @@ const styles = StyleSheet.create({
   matchEmoji: { fontSize: 64 },
   matchTitle: { fontSize: 28, fontWeight: '900', color: '#431407', marginTop: 8 },
   matchSubtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, textAlign: 'center' },
-  button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24,
-  },
+  button: { backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24 },
   buttonText: { color: 'white', fontSize: 14, fontWeight: '800' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
