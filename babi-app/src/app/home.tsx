@@ -57,13 +57,11 @@ export default function Home() {
     const swipedIds = (swiped || []).map(s => s.target_dog_id);
 
     // Diğer aktif köpekleri getir (kendi köpeği ve daha önce swipe edilenler hariç)
-    let query = supabase
+    const { data: otherDogs, error: dogsError } = await supabase
       .from('dogs')
       .select('id, name, breed, age, gender, dog_photos(url)')
       .eq('is_active', true)
       .neq('id', dogId);
-
-    const { data: otherDogs, error: dogsError } = await query;
 
     if (dogsError) {
       setError('Köpekler yüklenemedi: ' + dogsError.message);
@@ -108,7 +106,6 @@ export default function Home() {
     }
 
     if (action === 'like') {
-      // Karşılıklı like olup olmadığını kontrol et (trigger zaten match'i oluşturmuş olmalı)
       const { data: matchData } = await supabase
         .from('matches')
         .select('id')
@@ -151,8 +148,11 @@ export default function Home() {
         <Text style={styles.matchEmoji}>🎉</Text>
         <Text style={styles.matchTitle}>Eşleştiniz!</Text>
         <Text style={styles.matchSubtitle}>{matchInfo.name} ile artık mesajlaşabilirsiniz</Text>
-        <TouchableOpacity style={styles.button} onPress={closeMatch}>
-          <Text style={styles.buttonText}>Devam Et</Text>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/matches')}>
+          <Text style={styles.buttonText}>Mesajlaş</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={closeMatch} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#9A6B4B', fontWeight: '700' }}>Devam Et</Text>
         </TouchableOpacity>
       </View>
     );
@@ -165,6 +165,9 @@ export default function Home() {
         <TouchableOpacity style={styles.button} onPress={loadData}>
           <Text style={styles.buttonText}>Yenile</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/matches')} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Mesajlarım</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -174,6 +177,13 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.headerTitle}>Babi.App</Text>
+        <TouchableOpacity onPress={() => router.push('/matches')}>
+          <Text style={styles.headerLink}>Mesajlar</Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.card}>
         {photoUrl ? (
           <Image source={{ uri: photoUrl }} style={styles.cardImage} />
@@ -203,6 +213,9 @@ export default function Home() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', paddingTop: 60, padding: 20 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: 360, marginBottom: 16 },
+  headerTitle: { fontSize: 18, fontWeight: '900', color: '#431407' },
+  headerLink: { fontSize: 14, fontWeight: '700', color: '#FB923C' },
   card: { width: '100%', maxWidth: 360, aspectRatio: 0.75, borderRadius: 24, overflow: 'hidden', backgroundColor: 'white' },
   cardImage: { width: '100%', height: '80%' },
   noPhoto: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFEDD5' },
