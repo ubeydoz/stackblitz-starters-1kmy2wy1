@@ -65,9 +65,7 @@ export default function Profile() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <TouchableOpacity onPress={() => router.back()}>
-        <Text style={styles.backLink}>‹ Geri</Text>
-      </TouchableOpacity>
+      
 
       {photoUrl ? (
         <Image source={{ uri: photoUrl }} style={styles.heroPhoto} />

@@ -41,9 +41,6 @@ export default function Library() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()}>
-          <Text style={styles.backLink}>‹ Geri</Text>
-        </TouchableOpacity>
         <Text style={styles.title}>Kütüphane</Text>
       </View>
 

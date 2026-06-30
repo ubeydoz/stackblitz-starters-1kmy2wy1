@@ -259,15 +259,6 @@ export default function Home() {
         <TouchableOpacity onPress={() => setFilterVisible(true)} style={{ marginTop: 12 }}>
           <Text style={{ color: '#FB923C', fontWeight: '700' }}>Filtrele</Text>
         </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/library')} style={{ marginTop: 12 }}>
-          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Kütüphane</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/matches')} style={{ marginTop: 12 }}>
-          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Mesajlarım</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => router.push('/profile')} style={{ marginTop: 12 }}>
-          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Profil</Text>
-        </TouchableOpacity>
       </View>
     );
   }
@@ -281,20 +272,9 @@ export default function Home() {
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Babi.App</Text>
-        <View style={{ flexDirection: 'row', gap: 16 }}>
-          <TouchableOpacity onPress={() => setFilterVisible(true)}>
-            <Text style={styles.headerLink}>Filtre</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/library')}>
-            <Text style={styles.headerLink}>Kütüphane</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/matches')}>
-            <Text style={styles.headerLink}>Mesajlar</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => router.push('/profile')}>
-            <Text style={styles.headerLink}>Profil</Text>
-          </TouchableOpacity>
-        </View>
+        <TouchableOpacity onPress={() => setFilterVisible(true)}>
+          <Text style={styles.headerLink}>Filtre</Text>
+        </TouchableOpacity>
       </View>
 
       <View style={styles.card}>
