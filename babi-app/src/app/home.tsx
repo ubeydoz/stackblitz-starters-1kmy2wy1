@@ -279,6 +279,9 @@ export default function Home() {
           <TouchableOpacity onPress={() => setFilterVisible(true)}>
             <Text style={styles.headerLink}>Filtre</Text>
           </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/library')}>
+            <Text style={styles.headerLink}>Kütüphane</Text>
+          </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/matches')}>
             <Text style={styles.headerLink}>Mesajlar</Text>
           </TouchableOpacity>
