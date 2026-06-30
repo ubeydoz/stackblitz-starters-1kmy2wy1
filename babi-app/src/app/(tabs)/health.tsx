@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator, Linking } from 'react-native';
+import * as Location from 'expo-location';
+import { Calendar } from 'react-native-calendars';
 import { supabase } from '../../../lib/supabase';
 
 type HealthRecord = {
@@ -18,11 +20,23 @@ const RECORD_TYPES = [
   { value: 'other', label: 'Diğer 📋' },
 ];
 
+type MarkedDates = {
+  [date: string]: {
+    marked: boolean;
+    dotColor: string;
+    selected?: boolean;
+    selectedColor?: string;
+  };
+};
+
 export default function Health() {
   const [records, setRecords] = useState<HealthRecord[]>([]);
   const [dogId, setDogId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [modalVisible, setModalVisible] = useState(false);
+  const [view, setView] = useState<'list' | 'calendar'>('list');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [markedDates, setMarkedDates] = useState<MarkedDates>({});
 
   const [newType, setNewType] = useState<'vaccine' | 'checkup' | 'medication' | 'other'>('vaccine');
   const [newTitle, setNewTitle] = useState('');
@@ -59,8 +73,36 @@ export default function Health() {
       .eq('dog_id', id)
       .order('date', { ascending: false });
 
-    setRecords(data || []);
+    const fetchedRecords = data || [];
+    setRecords(fetchedRecords);
+
+    // Takvim için işaretli günleri oluştur
+    const marks: MarkedDates = {};
+    fetchedRecords.forEach(r => {
+      if (r.date) {
+        marks[r.date] = { marked: true, dotColor: '#FB923C' };
+      }
+      if (r.next_date) {
+        marks[r.next_date] = { marked: true, dotColor: '#22C55E' };
+      }
+    });
+    setMarkedDates(marks);
     setLoading(false);
+  }
+
+  async function findNearbyVet() {
+    try {
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        const url = `https://www.google.com/maps/search/veteriner/@${loc.coords.latitude},${loc.coords.longitude},14z`;
+        Linking.openURL(url);
+      } else {
+        Linking.openURL(`https://www.google.com/maps/search/veteriner`);
+      }
+    } catch {
+      Linking.openURL(`https://www.google.com/maps/search/veteriner`);
+    }
   }
 
   async function handleSave() {
@@ -110,6 +152,11 @@ export default function Health() {
     return `${d}.${m}.${y}`;
   }
 
+  // Seçili güne ait kayıtlar
+  const selectedRecords = selectedDate
+    ? records.filter(r => r.date === selectedDate || r.next_date === selectedDate)
+    : [];
+
   if (loading) {
     return (
       <View style={styles.center}>
@@ -148,7 +195,13 @@ export default function Health() {
             <TextInput style={styles.input} value={newNextDate} onChangeText={setNewNextDate} placeholder="2027-06-30" />
 
             <Text style={styles.fieldLabel}>NOTLAR (opsiyonel)</Text>
-            <TextInput style={[styles.input, { minHeight: 50 }]} value={newNotes} onChangeText={setNewNotes} placeholder="Veteriner adı, doz bilgisi..." multiline />
+            <TextInput
+              style={[styles.input, { minHeight: 50 }]}
+              value={newNotes}
+              onChangeText={setNewNotes}
+              placeholder="Veteriner adı, doz bilgisi..."
+              multiline
+            />
 
             {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
@@ -166,41 +219,123 @@ export default function Health() {
 
       <View style={styles.header}>
         <Text style={styles.title}>Sağlık Takibi 💉</Text>
-        <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
-          <Text style={styles.addButtonText}>+ Ekle</Text>
+        <View style={{ flexDirection: 'row', gap: 8 }}>
+          <TouchableOpacity style={styles.vetButton} onPress={findNearbyVet}>
+            <Text style={styles.vetButtonText}>🏥 Vet Bul</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.addButton} onPress={() => setModalVisible(true)}>
+            <Text style={styles.addButtonText}>+ Ekle</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Görünüm seçici */}
+      <View style={styles.viewToggle}>
+        <TouchableOpacity
+          style={[styles.toggleBtn, view === 'list' && styles.toggleBtnActive]}
+          onPress={() => setView('list')}
+        >
+          <Text style={[styles.toggleText, view === 'list' && styles.toggleTextActive]}>📋 Liste</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.toggleBtn, view === 'calendar' && styles.toggleBtnActive]}
+          onPress={() => setView('calendar')}
+        >
+          <Text style={[styles.toggleText, view === 'calendar' && styles.toggleTextActive]}>📅 Takvim</Text>
         </TouchableOpacity>
       </View>
 
-      {records.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyText}>Henüz sağlık kaydı yok.</Text>
-          <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
-          <TouchableOpacity style={styles.emptyButton} onPress={() => setModalVisible(true)}>
-            <Text style={styles.emptyButtonText}>İlk Kaydı Ekle</Text>
-          </TouchableOpacity>
+      {view === 'calendar' ? (
+        <View style={{ flex: 1 }}>
+          <Calendar
+            markedDates={{
+              ...markedDates,
+              ...(selectedDate ? {
+                [selectedDate]: {
+                  ...markedDates[selectedDate],
+                  selected: true,
+                  selectedColor: '#FB923C',
+                }
+              } : {}),
+            }}
+            onDayPress={day => setSelectedDate(day.dateString)}
+            theme={{
+              backgroundColor: '#FFF7ED',
+              calendarBackground: '#FFF7ED',
+              selectedDayBackgroundColor: '#FB923C',
+              todayTextColor: '#FB923C',
+              arrowColor: '#FB923C',
+              dotColor: '#FB923C',
+              textDayFontWeight: '600',
+              textMonthFontWeight: '800',
+            }}
+          />
+
+          <View style={styles.legendRow}>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#FB923C' }]} />
+              <Text style={styles.legendText}>Kayıt tarihi</Text>
+            </View>
+            <View style={styles.legendItem}>
+              <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
+              <Text style={styles.legendText}>Sonraki randevu</Text>
+            </View>
+          </View>
+
+          {selectedDate && selectedRecords.length > 0 ? (
+            <View style={{ marginTop: 8 }}>
+              <Text style={styles.selectedDateTitle}>{formatDate(selectedDate)} tarihli kayıtlar:</Text>
+              {selectedRecords.map(item => (
+                <View key={item.id} style={styles.card}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.typeTag}>{typeLabel(item.record_type)}</Text>
+                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                      <Text style={styles.deleteText}>Sil</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  {item.notes ? <Text style={styles.notesText}>{item.notes}</Text> : null}
+                </View>
+              ))}
+            </View>
+          ) : selectedDate ? (
+            <Text style={styles.noRecordText}>Bu tarihte kayıt yok.</Text>
+          ) : null}
         </View>
       ) : (
-        <FlatList
-          data={records}
-          keyExtractor={item => item.id}
-          contentContainerStyle={{ paddingBottom: 40 }}
-          renderItem={({ item }) => (
-            <View style={styles.card}>
-              <View style={styles.cardHeader}>
-                <Text style={styles.typeTag}>{typeLabel(item.record_type)}</Text>
-                <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                  <Text style={styles.deleteText}>Sil</Text>
-                </TouchableOpacity>
-              </View>
-              <Text style={styles.cardTitle}>{item.title}</Text>
-              <Text style={styles.dateText}>📅 {formatDate(item.date)}</Text>
-              {item.next_date ? (
-                <Text style={styles.nextDateText}>🔔 Sonraki: {formatDate(item.next_date)}</Text>
-              ) : null}
-              {item.notes ? <Text style={styles.notesText}>{item.notes}</Text> : null}
+        <>
+          {records.length === 0 ? (
+            <View style={styles.center}>
+              <Text style={styles.emptyText}>Henüz sağlık kaydı yok.</Text>
+              <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
+              <TouchableOpacity style={styles.emptyButton} onPress={() => setModalVisible(true)}>
+                <Text style={styles.emptyButtonText}>İlk Kaydı Ekle</Text>
+              </TouchableOpacity>
             </View>
+          ) : (
+            <FlatList
+              data={records}
+              keyExtractor={item => item.id}
+              contentContainerStyle={{ paddingBottom: 40 }}
+              renderItem={({ item }) => (
+                <View style={styles.card}>
+                  <View style={styles.cardHeader}>
+                    <Text style={styles.typeTag}>{typeLabel(item.record_type)}</Text>
+                    <TouchableOpacity onPress={() => handleDelete(item.id)}>
+                      <Text style={styles.deleteText}>Sil</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <Text style={styles.cardTitle}>{item.title}</Text>
+                  <Text style={styles.dateText}>📅 {formatDate(item.date)}</Text>
+                  {item.next_date ? (
+                    <Text style={styles.nextDateText}>🔔 Sonraki: {formatDate(item.next_date)}</Text>
+                  ) : null}
+                  {item.notes ? <Text style={styles.notesText}>{item.notes}</Text> : null}
+                </View>
+              )}
+            />
           )}
-        />
+        </>
       )}
     </View>
   );
@@ -209,10 +344,23 @@ export default function Health() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 60 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   title: { fontSize: 22, fontWeight: '800', color: '#431407' },
+  vetButton: { backgroundColor: '#FFEDD5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#FED7AA' },
+  vetButtonText: { color: '#FB923C', fontWeight: '800', fontSize: 12 },
   addButton: { backgroundColor: '#FB923C', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
   addButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  viewToggle: { flexDirection: 'row', backgroundColor: 'white', borderRadius: 14, padding: 4, marginBottom: 16, borderWidth: 1, borderColor: '#FED7AA' },
+  toggleBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
+  toggleBtnActive: { backgroundColor: '#FB923C' },
+  toggleText: { fontSize: 13, fontWeight: '700', color: '#9A6B4B' },
+  toggleTextActive: { color: 'white' },
+  legendRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 8, marginTop: 8, marginBottom: 4 },
+  legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  legendDot: { width: 10, height: 10, borderRadius: 5 },
+  legendText: { fontSize: 11, color: '#9A6B4B' },
+  selectedDateTitle: { fontSize: 13, fontWeight: '800', color: '#431407', marginBottom: 8 },
+  noRecordText: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginTop: 16 },
   emptyText: { fontSize: 16, fontWeight: '700', color: '#431407', marginBottom: 8 },
   emptySubtext: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginBottom: 20, maxWidth: 260 },
   emptyButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
