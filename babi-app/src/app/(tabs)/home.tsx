@@ -14,7 +14,7 @@ type DogCard = {
 
 const BREEDS = ['Golden Retriever', 'Labrador', 'Husky', 'Corgi', 'Poodle', 'Bulldog', 'Pomeranian', 'Diğer'];
 const SCREEN_WIDTH = Dimensions.get('window').width;
-const SWIPE_THRESHOLD = 120;
+const SWIPE_THRESHOLD = 80;
 
 export default function Home() {
   const router = useRouter();
@@ -156,11 +156,21 @@ export default function Home() {
 
   const panResponder = useRef(
     PanResponder.create({
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 5,
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3,
       onPanResponderMove: (_, gesture) => {
         pan.setValue({ x: gesture.dx, y: gesture.dy });
       },
       onPanResponderRelease: (_, gesture) => {
+        if (gesture.dx > SWIPE_THRESHOLD) {
+          animateSwipeOut('like');
+        } else if (gesture.dx < -SWIPE_THRESHOLD) {
+          animateSwipeOut('dislike');
+        } else {
+          Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+        }
+      },
+      onPanResponderTerminate: (_, gesture) => {
         if (gesture.dx > SWIPE_THRESHOLD) {
           animateSwipeOut('like');
         } else if (gesture.dx < -SWIPE_THRESHOLD) {
