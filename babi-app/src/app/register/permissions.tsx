@@ -2,16 +2,35 @@ import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import { supabase } from '../../../lib/supabase';
 
 export default function Permissions() {
   const router = useRouter();
   const [locationEnabled, setLocationEnabled] = useState(false);
   const [notifEnabled, setNotifEnabled] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   async function handleContinue() {
+    setLoading(true);
+
     if (locationEnabled) {
-      await Location.requestForegroundPermissionsAsync();
+      const { status } = await Location.requestForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        const { data: userData } = await supabase.auth.getUser();
+        const userId = userData.user?.id;
+        if (userId) {
+          await supabase
+            .from('profiles')
+            .update({
+              location: `POINT(${loc.coords.longitude} ${loc.coords.latitude})`,
+            })
+            .eq('id', userId);
+        }
+      }
     }
+
+    setLoading(false);
     router.push('/register/photos');
   }
 
@@ -40,8 +59,8 @@ export default function Permissions() {
         </Text>
       </View>
 
-      <TouchableOpacity style={styles.button} onPress={handleContinue}>
-        <Text style={styles.buttonText}>Devam Et →</Text>
+      <TouchableOpacity style={styles.button} onPress={handleContinue} disabled={loading}>
+        <Text style={styles.buttonText}>{loading ? 'Kaydediliyor...' : 'Devam Et →'}</Text>
       </TouchableOpacity>
     </View>
   );
