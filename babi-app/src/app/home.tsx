@@ -265,6 +265,9 @@ export default function Home() {
         <TouchableOpacity onPress={() => router.push('/matches')} style={{ marginTop: 12 }}>
           <Text style={{ color: '#FB923C', fontWeight: '700' }}>Mesajlarım</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/profile')} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Profil</Text>
+        </TouchableOpacity>
       </View>
     );
   }
