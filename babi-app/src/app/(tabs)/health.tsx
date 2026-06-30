@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator, Linking } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator, Linking, ScrollView } from 'react-native';
 import * as Location from 'expo-location';
 import { Calendar } from 'react-native-calendars';
 import { supabase } from '../../../lib/supabase';
@@ -46,6 +46,9 @@ export default function Health() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
 
+  const [datePickerVisible, setDatePickerVisible] = useState(false);
+  const [datePickerTarget, setDatePickerTarget] = useState<'date' | 'next_date'>('date');
+
   useEffect(() => {
     loadRecords();
   }, []);
@@ -76,15 +79,10 @@ export default function Health() {
     const fetchedRecords = data || [];
     setRecords(fetchedRecords);
 
-    // Takvim için işaretli günleri oluştur
     const marks: MarkedDates = {};
     fetchedRecords.forEach(r => {
-      if (r.date) {
-        marks[r.date] = { marked: true, dotColor: '#FB923C' };
-      }
-      if (r.next_date) {
-        marks[r.next_date] = { marked: true, dotColor: '#22C55E' };
-      }
+      if (r.date) marks[r.date] = { marked: true, dotColor: '#FB923C' };
+      if (r.next_date) marks[r.next_date] = { marked: true, dotColor: '#22C55E' };
     });
     setMarkedDates(marks);
     setLoading(false);
@@ -105,10 +103,24 @@ export default function Health() {
     }
   }
 
+  function openDatePicker(target: 'date' | 'next_date') {
+    setDatePickerTarget(target);
+    setDatePickerVisible(true);
+  }
+
+  function onDateSelected(day: { dateString: string }) {
+    if (datePickerTarget === 'date') {
+      setNewDate(day.dateString);
+    } else {
+      setNewNextDate(day.dateString);
+    }
+    setDatePickerVisible(false);
+  }
+
   async function handleSave() {
     setError('');
     if (!newTitle.trim()) { setError('Başlık gerekli.'); return; }
-    if (!newDate.trim()) { setError('Tarih gerekli (YYYY-AA-GG).'); return; }
+    if (!newDate.trim()) { setError('Tarih seçiniz.'); return; }
     if (!dogId) return;
 
     setSaving(true);
@@ -152,7 +164,6 @@ export default function Health() {
     return `${d}.${m}.${y}`;
   }
 
-  // Seçili güne ait kayıtlar
   const selectedRecords = selectedDate
     ? records.filter(r => r.date === selectedDate || r.next_date === selectedDate)
     : [];
@@ -167,52 +178,95 @@ export default function Health() {
 
   return (
     <View style={styles.container}>
+
+      {/* Tarih seçici mini modal */}
+      <Modal visible={datePickerVisible} animationType="fade" transparent>
+        <View style={styles.modalOverlay}>
+          <View style={styles.datePickerModal}>
+            <Text style={styles.datePickerTitle}>
+              {datePickerTarget === 'date' ? 'Tarih Seç' : 'Sonraki Randevu Tarihi'}
+            </Text>
+            <Calendar
+              onDayPress={onDateSelected}
+              markedDates={datePickerTarget === 'date' && newDate ? {
+                [newDate]: { selected: true, selectedColor: '#FB923C' }
+              } : datePickerTarget === 'next_date' && newNextDate ? {
+                [newNextDate]: { selected: true, selectedColor: '#22C55E' }
+              } : {}}
+              theme={{
+                backgroundColor: 'white',
+                calendarBackground: 'white',
+                selectedDayBackgroundColor: '#FB923C',
+                todayTextColor: '#FB923C',
+                arrowColor: '#FB923C',
+                textDayFontWeight: '600',
+                textMonthFontWeight: '800',
+              }}
+            />
+            <TouchableOpacity style={styles.cancelButton} onPress={() => setDatePickerVisible(false)}>
+              <Text style={styles.cancelButtonText}>Vazgeç</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Yeni kayıt modal */}
       <Modal visible={modalVisible} animationType="slide" transparent>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Yeni Kayıt Ekle</Text>
+            <ScrollView showsVerticalScrollIndicator={false}>
+              <Text style={styles.modalTitle}>Yeni Kayıt Ekle</Text>
 
-            <Text style={styles.fieldLabel}>TÜR</Text>
-            <View style={styles.chipRow}>
-              {RECORD_TYPES.map(t => (
-                <TouchableOpacity
-                  key={t.value}
-                  style={[styles.chip, newType === t.value && styles.chipActive]}
-                  onPress={() => setNewType(t.value as any)}
-                >
-                  <Text style={[styles.chipText, newType === t.value && styles.chipTextActive]}>{t.label}</Text>
+              <Text style={styles.fieldLabel}>TÜR</Text>
+              <View style={styles.chipRow}>
+                {RECORD_TYPES.map(t => (
+                  <TouchableOpacity
+                    key={t.value}
+                    style={[styles.chip, newType === t.value && styles.chipActive]}
+                    onPress={() => setNewType(t.value as any)}
+                  >
+                    <Text style={[styles.chipText, newType === t.value && styles.chipTextActive]}>{t.label}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
+
+              <Text style={styles.fieldLabel}>BAŞLIK</Text>
+              <TextInput style={styles.input} value={newTitle} onChangeText={setNewTitle} placeholder="Örn: Kuduz Aşısı" />
+
+              <Text style={styles.fieldLabel}>TARİH</Text>
+              <TouchableOpacity style={styles.datePickerButton} onPress={() => openDatePicker('date')}>
+                <Text style={newDate ? styles.datePickerButtonTextSelected : styles.datePickerButtonTextPlaceholder}>
+                  {newDate ? `📅 ${formatDate(newDate)}` : '📅 Tarih seç'}
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.fieldLabel}>SONRAKI TARİH (opsiyonel)</Text>
+              <TouchableOpacity style={styles.datePickerButton} onPress={() => openDatePicker('next_date')}>
+                <Text style={newNextDate ? styles.datePickerButtonTextSelected : styles.datePickerButtonTextPlaceholder}>
+                  {newNextDate ? `🔔 ${formatDate(newNextDate)}` : '🔔 Sonraki randevu tarihi seç'}
+                </Text>
+              </TouchableOpacity>
+
+              <Text style={styles.fieldLabel}>NOTLAR (opsiyonel)</Text>
+              <TextInput
+                style={[styles.input, { minHeight: 50 }]}
+                value={newNotes}
+                onChangeText={setNewNotes}
+                placeholder="Veteriner adı, doz bilgisi..."
+                multiline
+              />
+
+              {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+              <View style={styles.modalActions}>
+                <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
+                  <Text style={styles.cancelButtonText}>Vazgeç</Text>
                 </TouchableOpacity>
-              ))}
-            </View>
-
-            <Text style={styles.fieldLabel}>BAŞLIK</Text>
-            <TextInput style={styles.input} value={newTitle} onChangeText={setNewTitle} placeholder="Örn: Kuduz Aşısı" />
-
-            <Text style={styles.fieldLabel}>TARİH (YYYY-AA-GG)</Text>
-            <TextInput style={styles.input} value={newDate} onChangeText={setNewDate} placeholder="2026-06-30" />
-
-            <Text style={styles.fieldLabel}>SONRAKI TARİH (opsiyonel)</Text>
-            <TextInput style={styles.input} value={newNextDate} onChangeText={setNewNextDate} placeholder="2027-06-30" />
-
-            <Text style={styles.fieldLabel}>NOTLAR (opsiyonel)</Text>
-            <TextInput
-              style={[styles.input, { minHeight: 50 }]}
-              value={newNotes}
-              onChangeText={setNewNotes}
-              placeholder="Veteriner adı, doz bilgisi..."
-              multiline
-            />
-
-            {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-            <View style={styles.modalActions}>
-              <TouchableOpacity style={styles.cancelButton} onPress={() => setModalVisible(false)}>
-                <Text style={styles.cancelButtonText}>Vazgeç</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
-                <Text style={styles.saveButtonText}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</Text>
-              </TouchableOpacity>
-            </View>
+                <TouchableOpacity style={styles.saveButton} onPress={handleSave} disabled={saving}>
+                  <Text style={styles.saveButtonText}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</Text>
+                </TouchableOpacity>
+              </View>
+            </ScrollView>
           </View>
         </View>
       </Modal>
@@ -229,7 +283,6 @@ export default function Health() {
         </View>
       </View>
 
-      {/* Görünüm seçici */}
       <View style={styles.viewToggle}>
         <TouchableOpacity
           style={[styles.toggleBtn, view === 'list' && styles.toggleBtnActive]}
@@ -246,7 +299,7 @@ export default function Health() {
       </View>
 
       {view === 'calendar' ? (
-        <View style={{ flex: 1 }}>
+        <ScrollView>
           <Calendar
             markedDates={{
               ...markedDates,
@@ -301,7 +354,7 @@ export default function Health() {
           ) : selectedDate ? (
             <Text style={styles.noRecordText}>Bu tarihte kayıt yok.</Text>
           ) : null}
-        </View>
+        </ScrollView>
       ) : (
         <>
           {records.length === 0 ? (
@@ -373,8 +426,13 @@ const styles = StyleSheet.create({
   dateText: { fontSize: 12, color: '#9A6B4B', marginBottom: 2 },
   nextDateText: { fontSize: 12, color: '#FB923C', fontWeight: '700', marginBottom: 2 },
   notesText: { fontSize: 12, color: '#5C4033', marginTop: 6, lineHeight: 18 },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
+  datePickerButton: { backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA', paddingHorizontal: 14, paddingVertical: 12 },
+  datePickerButtonTextSelected: { fontSize: 13, color: '#431407', fontWeight: '700' },
+  datePickerButtonTextPlaceholder: { fontSize: 13, color: '#9A6B4B' },
+  datePickerModal: { backgroundColor: 'white', borderRadius: 24, margin: 20, padding: 16 },
+  datePickerTitle: { fontSize: 16, fontWeight: '800', color: '#431407', marginBottom: 12, textAlign: 'center' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center' },
+  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%', marginTop: 'auto' },
   modalTitle: { fontSize: 20, fontWeight: '800', color: '#431407', marginBottom: 16 },
   fieldLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
