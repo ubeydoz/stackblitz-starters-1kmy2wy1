@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView, PanResponder, Animated, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import * as Location from 'expo-location';
 import { supabase } from '../../../lib/supabase';
 
 type DogCard = {
@@ -15,6 +16,7 @@ type DogCard = {
 const BREEDS = ['Golden Retriever', 'Labrador', 'Husky', 'Corgi', 'Poodle', 'Bulldog', 'Pomeranian', 'Diğer'];
 const SCREEN_WIDTH = Dimensions.get('window').width;
 const SWIPE_THRESHOLD = 80;
+const DISTANCE_OPTIONS = [5, 10, 25, 50, 100];
 
 export default function Home() {
   const router = useRouter();
@@ -30,6 +32,7 @@ export default function Home() {
   const [filterGender, setFilterGender] = useState<'male' | 'female' | null>(null);
   const [filterMinAge, setFilterMinAge] = useState(0);
   const [filterMaxAge, setFilterMaxAge] = useState(20);
+  const [filterDistance, setFilterDistance] = useState<number | null>(null);
 
   const pan = useRef(new Animated.ValueXY()).current;
   const swipingRef = useRef(false);
@@ -67,28 +70,67 @@ export default function Home() {
 
     const swipedIds = (swiped || []).map(s => s.target_dog_id);
 
-    let query = supabase
-      .from('dogs')
-      .select('id, name, breed, age, gender, dog_photos(url)')
-      .eq('is_active', true)
-      .neq('id', dogId)
-      .gte('age', filterMinAge)
-      .lte('age', filterMaxAge);
+    let baseDogs: any[] = [];
 
-    if (filterBreed) query = query.eq('breed', filterBreed);
-    if (filterGender) query = query.eq('gender', filterGender);
+    if (filterDistance) {
+      // Konum bazlı sorgu
+      const { status } = await Location.getForegroundPermissionsAsync();
+      if (status === 'granted') {
+        const loc = await Location.getCurrentPositionAsync({});
+        const { data: nearbyDogs, error: rpcError } = await supabase.rpc('get_dogs_nearby', {
+          user_lat: loc.coords.latitude,
+          user_lng: loc.coords.longitude,
+          radius_km: filterDistance,
+          exclude_dog_id: dogId,
+          min_age: filterMinAge,
+          max_age: filterMaxAge,
+          filter_breed: filterBreed || null,
+          filter_gender: filterGender || null,
+        });
 
-    const { data: otherDogs, error: dogsError } = await query;
+        if (!rpcError && nearbyDogs) {
+          // Fotoğrafları ayrıca çek
+          const ids = nearbyDogs.map((d: any) => d.id);
+          if (ids.length > 0) {
+            const { data: photos } = await supabase
+              .from('dog_photos')
+              .select('dog_id, url')
+              .in('dog_id', ids)
+              .eq('position', 0);
 
-    if (dogsError) {
-      setError('Köpekler yüklenemedi: ' + dogsError.message);
-      setLoading(false);
-      return;
-    }
+            baseDogs = nearbyDogs.map((d: any) => ({
+              ...d,
+              photos: photos?.filter(p => p.dog_id === d.id).map(p => ({ url: p.url })) || [],
+            }));
+          }
+        }
+      } else {
+        setError('Mesafe filtresi için konum izni gerekiyor.');
+        setLoading(false);
+        return;
+      }
+    } else {
+      // Normal sorgu (mesafe filtresi yok)
+      let query = supabase
+        .from('dogs')
+        .select('id, name, breed, age, gender, dog_photos(url)')
+        .eq('is_active', true)
+        .neq('id', dogId)
+        .gte('age', filterMinAge)
+        .lte('age', filterMaxAge);
 
-    const filtered = (otherDogs || [])
-      .filter(d => !swipedIds.includes(d.id))
-      .map(d => ({
+      if (filterBreed) query = query.eq('breed', filterBreed);
+      if (filterGender) query = query.eq('gender', filterGender);
+
+      const { data: otherDogs, error: dogsError } = await query;
+
+      if (dogsError) {
+        setError('Köpekler yüklenemedi: ' + dogsError.message);
+        setLoading(false);
+        return;
+      }
+
+      baseDogs = (otherDogs || []).map(d => ({
         id: d.id,
         name: d.name,
         breed: d.breed,
@@ -96,12 +138,14 @@ export default function Home() {
         gender: d.gender,
         photos: (d as any).dog_photos || [],
       }));
+    }
 
+    const filtered = baseDogs.filter(d => !swipedIds.includes(d.id));
     setCards(filtered);
     setCurrentIndex(0);
     pan.setValue({ x: 0, y: 0 });
     setLoading(false);
-  }, [router, filterBreed, filterGender, filterMinAge, filterMaxAge]);
+  }, [router, filterBreed, filterGender, filterMinAge, filterMaxAge, filterDistance]);
 
   useEffect(() => {
     loadData();
@@ -157,7 +201,7 @@ export default function Home() {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3 || Math.abs(gesture.dy) > 3,
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3,
       onPanResponderMove: (_, gesture) => {
         pan.setValue({ x: gesture.dx, y: gesture.dy });
       },
@@ -192,12 +236,93 @@ export default function Home() {
     setFilterGender(null);
     setFilterMinAge(0);
     setFilterMaxAge(20);
+    setFilterDistance(null);
     setFilterVisible(false);
   }
 
   function applyFilters() {
     setFilterVisible(false);
   }
+
+  const renderFilterModal = () => (
+    <Modal visible={filterVisible} animationType="slide" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Filtrele</Text>
+          <ScrollView>
+            <Text style={styles.filterLabel}>MESAFE</Text>
+            <View style={styles.chipRow}>
+              <TouchableOpacity
+                style={[styles.chip, filterDistance === null && styles.chipActive]}
+                onPress={() => setFilterDistance(null)}
+              >
+                <Text style={[styles.chipText, filterDistance === null && styles.chipTextActive]}>Tümü</Text>
+              </TouchableOpacity>
+              {DISTANCE_OPTIONS.map(d => (
+                <TouchableOpacity
+                  key={d}
+                  style={[styles.chip, filterDistance === d && styles.chipActive]}
+                  onPress={() => setFilterDistance(d)}
+                >
+                  <Text style={[styles.chipText, filterDistance === d && styles.chipTextActive]}>{d} km</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterLabel}>IRK</Text>
+            <View style={styles.chipRow}>
+              {BREEDS.map(b => (
+                <TouchableOpacity
+                  key={b}
+                  style={[styles.chip, filterBreed === b && styles.chipActive]}
+                  onPress={() => setFilterBreed(filterBreed === b ? null : b)}
+                >
+                  <Text style={[styles.chipText, filterBreed === b && styles.chipTextActive]}>{b}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterLabel}>CİNSİYET</Text>
+            <View style={styles.chipRow}>
+              {(['female', 'male'] as const).map(g => (
+                <TouchableOpacity
+                  key={g}
+                  style={[styles.chip, filterGender === g && styles.chipActive]}
+                  onPress={() => setFilterGender(filterGender === g ? null : g)}
+                >
+                  <Text style={[styles.chipText, filterGender === g && styles.chipTextActive]}>
+                    {g === 'female' ? 'Dişi ♀' : 'Erkek ♂'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterLabel}>YAŞ ARALIĞI: {filterMinAge} - {filterMaxAge}</Text>
+            <View style={styles.ageRow}>
+              {[0, 2, 5, 10, 15, 20].map(age => (
+                <TouchableOpacity
+                  key={`min-${age}`}
+                  style={[styles.ageChip, filterMinAge === age && styles.chipActive]}
+                  onPress={() => setFilterMinAge(age)}
+                >
+                  <Text style={[styles.chipText, filterMinAge === age && styles.chipTextActive]}>{age}+</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+              <Text style={styles.clearButtonText}>Temizle</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+              <Text style={styles.applyButtonText}>Uygula</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 
   if (loading) {
     return (
@@ -211,6 +336,9 @@ export default function Home() {
     return (
       <View style={styles.centerContainer}>
         <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity style={[styles.button, { marginTop: 16 }]} onPress={loadData}>
+          <Text style={styles.buttonText}>Tekrar Dene</Text>
+        </TouchableOpacity>
       </View>
     );
   }
@@ -230,64 +358,6 @@ export default function Home() {
       </View>
     );
   }
-
-  const renderFilterModal = () => (
-    <Modal visible={filterVisible} animationType="slide" transparent>
-      <View style={styles.modalOverlay}>
-        <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Filtrele</Text>
-          <ScrollView>
-            <Text style={styles.filterLabel}>IRK</Text>
-            <View style={styles.chipRow}>
-              {BREEDS.map(b => (
-                <TouchableOpacity
-                  key={b}
-                  style={[styles.chip, filterBreed === b && styles.chipActive]}
-                  onPress={() => setFilterBreed(filterBreed === b ? null : b)}
-                >
-                  <Text style={[styles.chipText, filterBreed === b && styles.chipTextActive]}>{b}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.filterLabel}>CİNSİYET</Text>
-            <View style={styles.chipRow}>
-              {(['female', 'male'] as const).map(g => (
-                <TouchableOpacity
-                  key={g}
-                  style={[styles.chip, filterGender === g && styles.chipActive]}
-                  onPress={() => setFilterGender(filterGender === g ? null : g)}
-                >
-                  <Text style={[styles.chipText, filterGender === g && styles.chipTextActive]}>
-                    {g === 'female' ? 'Dişi ♀' : 'Erkek ♂'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-            <Text style={styles.filterLabel}>YAŞ ARALIĞI: {filterMinAge} - {filterMaxAge}</Text>
-            <View style={styles.ageRow}>
-              {[0, 2, 5, 10, 15, 20].map(age => (
-                <TouchableOpacity
-                  key={`min-${age}`}
-                  style={[styles.ageChip, filterMinAge === age && styles.chipActive]}
-                  onPress={() => setFilterMinAge(age)}
-                >
-                  <Text style={[styles.chipText, filterMinAge === age && styles.chipTextActive]}>{age}+</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </ScrollView>
-          <View style={styles.modalActions}>
-            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
-              <Text style={styles.clearButtonText}>Temizle</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
-              <Text style={styles.applyButtonText}>Uygula</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </View>
-    </Modal>
-  );
 
   if (currentIndex >= cards.length) {
     return (
@@ -331,16 +401,16 @@ export default function Home() {
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Babi.App</Text>
         <TouchableOpacity onPress={() => setFilterVisible(true)}>
-          <Text style={styles.headerLink}>Filtre</Text>
+          <Text style={styles.headerLink}>
+            Filtre {filterDistance ? `· ${filterDistance}km` : ''}
+          </Text>
         </TouchableOpacity>
       </View>
 
       <Animated.View
         style={[
           styles.card,
-          {
-            transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate }],
-          },
+          { transform: [{ translateX: pan.x }, { translateY: pan.y }, { rotate }] },
         ]}
         {...panResponder.panHandlers}
       >
