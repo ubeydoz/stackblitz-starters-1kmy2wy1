@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
@@ -12,6 +12,8 @@ type DogCard = {
   photos: { url: string }[];
 };
 
+const BREEDS = ['Golden Retriever', 'Labrador', 'Husky', 'Corgi', 'Poodle', 'Bulldog', 'Pomeranian', 'Diğer'];
+
 export default function Home() {
   const router = useRouter();
   const [myDogId, setMyDogId] = useState<string | null>(null);
@@ -20,6 +22,12 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [matchInfo, setMatchInfo] = useState<DogCard | null>(null);
+
+  const [filterVisible, setFilterVisible] = useState(false);
+  const [filterBreed, setFilterBreed] = useState<string | null>(null);
+  const [filterGender, setFilterGender] = useState<'male' | 'female' | null>(null);
+  const [filterMinAge, setFilterMinAge] = useState(0);
+  const [filterMaxAge, setFilterMaxAge] = useState(20);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -32,7 +40,6 @@ export default function Home() {
       return;
     }
 
-    // Kullanıcının kendi köpeğini bul
     const { data: myDogs, error: myDogError } = await supabase
       .from('dogs')
       .select('id')
@@ -48,7 +55,6 @@ export default function Home() {
     const dogId = myDogs[0].id;
     setMyDogId(dogId);
 
-    // Daha önce swipe edilmiş köpekleri bul
     const { data: swiped } = await supabase
       .from('swipes')
       .select('target_dog_id')
@@ -56,12 +62,22 @@ export default function Home() {
 
     const swipedIds = (swiped || []).map(s => s.target_dog_id);
 
-    // Diğer aktif köpekleri getir (kendi köpeği ve daha önce swipe edilenler hariç)
-    const { data: otherDogs, error: dogsError } = await supabase
+    let query = supabase
       .from('dogs')
       .select('id, name, breed, age, gender, dog_photos(url)')
       .eq('is_active', true)
-      .neq('id', dogId);
+      .neq('id', dogId)
+      .gte('age', filterMinAge)
+      .lte('age', filterMaxAge);
+
+    if (filterBreed) {
+      query = query.eq('breed', filterBreed);
+    }
+    if (filterGender) {
+      query = query.eq('gender', filterGender);
+    }
+
+    const { data: otherDogs, error: dogsError } = await query;
 
     if (dogsError) {
       setError('Köpekler yüklenemedi: ' + dogsError.message);
@@ -83,7 +99,7 @@ export default function Home() {
     setCards(filtered);
     setCurrentIndex(0);
     setLoading(false);
-  }, [router]);
+  }, [router, filterBreed, filterGender, filterMinAge, filterMaxAge]);
 
   useEffect(() => {
     loadData();
@@ -126,6 +142,18 @@ export default function Home() {
     setCurrentIndex(prev => prev + 1);
   }
 
+  function clearFilters() {
+    setFilterBreed(null);
+    setFilterGender(null);
+    setFilterMinAge(0);
+    setFilterMaxAge(20);
+    setFilterVisible(false);
+  }
+
+  function applyFilters() {
+    setFilterVisible(false);
+  }
+
   if (loading) {
     return (
       <View style={styles.centerContainer}>
@@ -158,12 +186,78 @@ export default function Home() {
     );
   }
 
+  const renderFilterModal = () => (
+    <Modal visible={filterVisible} animationType="slide" transparent>
+      <View style={styles.modalOverlay}>
+        <View style={styles.modalContent}>
+          <Text style={styles.modalTitle}>Filtrele</Text>
+
+          <ScrollView>
+            <Text style={styles.filterLabel}>IRK</Text>
+            <View style={styles.chipRow}>
+              {BREEDS.map(b => (
+                <TouchableOpacity
+                  key={b}
+                  style={[styles.chip, filterBreed === b && styles.chipActive]}
+                  onPress={() => setFilterBreed(filterBreed === b ? null : b)}
+                >
+                  <Text style={[styles.chipText, filterBreed === b && styles.chipTextActive]}>{b}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterLabel}>CİNSİYET</Text>
+            <View style={styles.chipRow}>
+              {(['female', 'male'] as const).map(g => (
+                <TouchableOpacity
+                  key={g}
+                  style={[styles.chip, filterGender === g && styles.chipActive]}
+                  onPress={() => setFilterGender(filterGender === g ? null : g)}
+                >
+                  <Text style={[styles.chipText, filterGender === g && styles.chipTextActive]}>
+                    {g === 'female' ? 'Dişi ♀' : 'Erkek ♂'}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={styles.filterLabel}>YAŞ ARALIĞI: {filterMinAge} - {filterMaxAge}</Text>
+            <View style={styles.ageRow}>
+              {[0, 2, 5, 10, 15, 20].map(age => (
+                <TouchableOpacity
+                  key={`min-${age}`}
+                  style={[styles.ageChip, filterMinAge === age && styles.chipActive]}
+                  onPress={() => setFilterMinAge(age)}
+                >
+                  <Text style={[styles.chipText, filterMinAge === age && styles.chipTextActive]}>{age}+</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+
+          <View style={styles.modalActions}>
+            <TouchableOpacity style={styles.clearButton} onPress={clearFilters}>
+              <Text style={styles.clearButtonText}>Temizle</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.applyButton} onPress={applyFilters}>
+              <Text style={styles.applyButtonText}>Uygula</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+
   if (currentIndex >= cards.length) {
     return (
       <View style={styles.centerContainer}>
+        {renderFilterModal()}
         <Text style={styles.emptyText}>Şu an gösterilecek başka köpek yok 🐾</Text>
         <TouchableOpacity style={styles.button} onPress={loadData}>
           <Text style={styles.buttonText}>Yenile</Text>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setFilterVisible(true)} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Filtrele</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/matches')} style={{ marginTop: 12 }}>
           <Text style={{ color: '#FB923C', fontWeight: '700' }}>Mesajlarım</Text>
@@ -177,11 +271,18 @@ export default function Home() {
 
   return (
     <View style={styles.container}>
+      {renderFilterModal()}
+
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Babi.App</Text>
-        <TouchableOpacity onPress={() => router.push('/matches')}>
-          <Text style={styles.headerLink}>Mesajlar</Text>
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', gap: 16 }}>
+          <TouchableOpacity onPress={() => setFilterVisible(true)}>
+            <Text style={styles.headerLink}>Filtre</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/matches')}>
+            <Text style={styles.headerLink}>Mesajlar</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.card}>
@@ -236,4 +337,20 @@ const styles = StyleSheet.create({
     backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24,
   },
   buttonText: { color: 'white', fontSize: 14, fontWeight: '800' },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: '#431407', marginBottom: 16 },
+  filterLabel: { fontSize: 11, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginTop: 16, marginBottom: 8 },
+  chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
+  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
+  chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
+  chipTextActive: { color: 'white' },
+  ageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  ageChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
+  modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
+  clearButton: { flex: 1, borderWidth: 2, borderColor: '#FED7AA', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
+  clearButtonText: { color: '#9A6B4B', fontWeight: '800' },
+  applyButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
+  applyButtonText: { color: 'white', fontWeight: '800' },
 });
