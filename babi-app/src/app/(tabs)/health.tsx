@@ -181,7 +181,7 @@ export default function Health() {
 
       {/* Tarih seçici mini modal */}
       <Modal visible={datePickerVisible} animationType="fade" transparent>
-        <View style={styles.modalOverlay}>
+      <View style={styles.datePickerOverlay}>
           <View style={styles.datePickerModal}>
             <Text style={styles.datePickerTitle}>
               {datePickerTarget === 'date' ? 'Tarih Seç' : 'Sonraki Randevu Tarihi'}
@@ -429,7 +429,8 @@ const styles = StyleSheet.create({
   datePickerButton: { backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA', paddingHorizontal: 14, paddingVertical: 12 },
   datePickerButtonTextSelected: { fontSize: 13, color: '#431407', fontWeight: '700' },
   datePickerButtonTextPlaceholder: { fontSize: 13, color: '#9A6B4B' },
-  datePickerModal: { backgroundColor: 'white', borderRadius: 24, margin: 20, padding: 16 },
+  datePickerModal: { backgroundColor: 'white', borderRadius: 24, margin: 20, padding: 16, elevation: 10 },
+  datePickerOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'center', zIndex: 999 },
   datePickerTitle: { fontSize: 16, fontWeight: '800', color: '#431407', marginBottom: 12, textAlign: 'center' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center' },
   modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%', marginTop: 'auto' },
