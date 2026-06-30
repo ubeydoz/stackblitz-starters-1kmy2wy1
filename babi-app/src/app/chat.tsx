@@ -17,50 +17,54 @@ export default function Chat() {
   const [input, setInput] = useState('');
   const [myDogId, setMyDogId] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
+  const initialized = useRef(false);
 
   useEffect(() => {
+    if (initialized.current) return;
+    initialized.current = true;
+
+    let channel: ReturnType<typeof supabase.channel> | null = null;
+
+    async function init() {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        router.replace('/login');
+        return;
+      }
+
+      const { data: myDogs } = await supabase.from('dogs').select('id').eq('owner_id', userId).limit(1);
+      if (myDogs && myDogs.length > 0) {
+        setMyDogId(myDogs[0].id);
+      }
+
+      const { data } = await supabase
+        .from('messages')
+        .select('*')
+        .eq('match_id', matchId)
+        .order('created_at', { ascending: true });
+      setMessages(data || []);
+
+      channel = supabase
+        .channel(`chat-${matchId}`)
+        .on(
+          'postgres_changes',
+          { event: 'INSERT', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
+          payload => {
+            setMessages(prev => [...prev, payload.new as Message]);
+          }
+        )
+        .subscribe();
+    }
+
     init();
-  }, []);
-
-  async function init() {
-    const { data: userData } = await supabase.auth.getUser();
-    const userId = userData.user?.id;
-    if (!userId) {
-      router.replace('/login');
-      return;
-    }
-
-    const { data: myDogs } = await supabase.from('dogs').select('id').eq('owner_id', userId).limit(1);
-    if (myDogs && myDogs.length > 0) {
-      setMyDogId(myDogs[0].id);
-    }
-
-    await loadMessages();
-
-    const channel = supabase
-      .channel(`chat-${matchId}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'messages', filter: `match_id=eq.${matchId}` },
-        payload => {
-          setMessages(prev => [...prev, payload.new as Message]);
-        }
-      )
-      .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      if (channel) {
+        supabase.removeChannel(channel);
+      }
     };
-  }
-
-  async function loadMessages() {
-    const { data } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('match_id', matchId)
-      .order('created_at', { ascending: true });
-    setMessages(data || []);
-  }
+  }, [matchId, router]);
 
   async function sendMessage() {
     if (!input.trim() || !myDogId) return;
@@ -97,6 +101,8 @@ export default function Chat() {
           value={input}
           onChangeText={setInput}
           placeholder="Mesaj yaz..."
+          onSubmitEditing={sendMessage}
+          returnKeyType="send"
         />
         <TouchableOpacity style={styles.sendButton} onPress={sendMessage}>
           <Text style={styles.sendButtonText}>Gönder</Text>
