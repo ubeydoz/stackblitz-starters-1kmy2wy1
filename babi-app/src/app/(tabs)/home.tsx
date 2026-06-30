@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 type DogCard = {
   id: string;

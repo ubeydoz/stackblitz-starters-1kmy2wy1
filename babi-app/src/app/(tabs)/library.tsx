@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 type Article = {
   id: string;

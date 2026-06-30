@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, FlatList, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 type MatchItem = {
   matchId: string;
