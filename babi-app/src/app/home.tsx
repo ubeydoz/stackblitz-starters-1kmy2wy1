@@ -259,6 +259,9 @@ export default function Home() {
         <TouchableOpacity onPress={() => setFilterVisible(true)} style={{ marginTop: 12 }}>
           <Text style={{ color: '#FB923C', fontWeight: '700' }}>Filtrele</Text>
         </TouchableOpacity>
+        <TouchableOpacity onPress={() => router.push('/library')} style={{ marginTop: 12 }}>
+          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Kütüphane</Text>
+        </TouchableOpacity>
         <TouchableOpacity onPress={() => router.push('/matches')} style={{ marginTop: 12 }}>
           <Text style={{ color: '#FB923C', fontWeight: '700' }}>Mesajlarım</Text>
         </TouchableOpacity>
@@ -284,6 +287,9 @@ export default function Home() {
           </TouchableOpacity>
           <TouchableOpacity onPress={() => router.push('/matches')}>
             <Text style={styles.headerLink}>Mesajlar</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => router.push('/profile')}>
+            <Text style={styles.headerLink}>Profil</Text>
           </TouchableOpacity>
         </View>
       </View>
