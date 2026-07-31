@@ -24,6 +24,7 @@ export default function Profile() {
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
   const [reordering, setReordering] = useState(false);
+  const [bestPhotoId, setBestPhotoId] = useState<string | null>(null);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarUploading, setAvatarUploading] = useState(false);
@@ -81,9 +82,42 @@ export default function Profile() {
       photos.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
       setDogPhotos(photos);
       setPhotoUrl(photos[0]?.url || null);
+
+      await loadBestPhoto(dog.id);
     }
 
     setLoading(false);
+  }
+
+  async function loadBestPhoto(dogIdParam: string) {
+    const { data: likeRows } = await supabase
+      .from('swipes')
+      .select('shown_photo_id')
+      .eq('target_dog_id', dogIdParam)
+      .eq('action', 'like')
+      .not('shown_photo_id', 'is', null);
+
+    if (!likeRows || likeRows.length === 0) {
+      setBestPhotoId(null);
+      return;
+    }
+
+    const counts: Record<string, number> = {};
+    likeRows.forEach(row => {
+      const id = row.shown_photo_id as string;
+      counts[id] = (counts[id] || 0) + 1;
+    });
+
+    let topId: string | null = null;
+    let topCount = 0;
+    Object.entries(counts).forEach(([id, count]) => {
+      if (count > topCount) {
+        topCount = count;
+        topId = id;
+      }
+    });
+
+    setBestPhotoId(topId);
   }
 
   // ---------- SAHİP (AVATAR) FOTOĞRAFI ----------
@@ -241,6 +275,9 @@ export default function Profile() {
     if (photoUrl && !updated.find(p => p.url === photoUrl)) {
       setPhotoUrl(updated[0]?.url || null);
     }
+    if (bestPhotoId === photoId) {
+      setBestPhotoId(null);
+    }
   }
 
   async function handleDragEnd({ data }: { data: DogPhoto[] }) {
@@ -272,7 +309,10 @@ export default function Profile() {
         <Image source={{ uri: item.url }} style={styles.reorderThumb} />
         <View style={styles.reorderTextWrap}>
           <Text style={styles.reorderIndex}>{index + 1}. Fotoğraf</Text>
-          {index === 0 ? <Text style={styles.reorderMainBadge}>Ana Foto</Text> : null}
+          <View style={styles.reorderBadgeRow}>
+            {index === 0 ? <Text style={styles.reorderMainBadge}>Ana Foto</Text> : null}
+            {item.id === bestPhotoId ? <Text style={styles.reorderBestBadge}>⭐ En Beğenilen</Text> : null}
+          </View>
         </View>
         <Text style={styles.reorderHandle}>☰</Text>
       </TouchableOpacity>
@@ -488,6 +528,11 @@ export default function Profile() {
                   {dogPhotos.map(photo => (
                     <View key={photo.id} style={styles.galleryPage}>
                       <Image source={{ uri: photo.url }} style={styles.galleryFullImage} />
+                      {photo.id === bestPhotoId ? (
+                        <View style={styles.bestPhotoBadge}>
+                          <Text style={styles.bestPhotoBadgeText}>⭐ En Beğenilen</Text>
+                        </View>
+                      ) : null}
                       <TouchableOpacity
                         style={styles.galleryDeleteButton}
                         onPress={() => confirmDeletePhoto(photo.id)}
@@ -589,6 +634,11 @@ const styles = StyleSheet.create({
   },
   galleryAddText: { color: '#FB923C', fontWeight: '800', fontSize: 14, textAlign: 'center' },
   galleryHint: { fontSize: 11, color: '#9A6B4B', marginTop: 12, textAlign: 'center' },
+  bestPhotoBadge: {
+    position: 'absolute', top: 10, left: 10, backgroundColor: '#FB923C',
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  bestPhotoBadgeText: { color: 'white', fontWeight: '800', fontSize: 11 },
 
   reorderHint: { fontSize: 12, color: '#9A6B4B', marginBottom: 12, lineHeight: 18 },
   reorderList: { maxHeight: 360 },
@@ -600,6 +650,8 @@ const styles = StyleSheet.create({
   reorderThumb: { width: 50, height: 50, borderRadius: 10 },
   reorderTextWrap: { marginLeft: 12, flex: 1 },
   reorderIndex: { fontSize: 13, fontWeight: '700', color: '#431407' },
-  reorderMainBadge: { fontSize: 10, fontWeight: '800', color: '#FB923C', marginTop: 2 },
+  reorderBadgeRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
+  reorderMainBadge: { fontSize: 10, fontWeight: '800', color: '#FB923C' },
+  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: '#DC9C00' },
   reorderHandle: { fontSize: 20, color: '#9A6B4B', paddingHorizontal: 8 },
 });
