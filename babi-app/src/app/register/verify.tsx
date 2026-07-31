@@ -54,16 +54,19 @@ export default function Verify() {
       return;
     }
 
-    // Doğrulama başarılı, profili oluşturalım
+    // Doğrulama başarılı, profili oluşturalım (ya da zaten varsa güncelleyelim)
     const userId = data.user?.id;
     if (userId) {
-      const { error: profileError } = await supabase.from('profiles').insert({
-        id: userId,
-        full_name: fullName,
-        birth_date: birthDate,
-        email_verified: true,
-        terms_accepted_at: new Date().toISOString(),
-      });
+      const { error: profileError } = await supabase.from('profiles').upsert(
+        {
+          id: userId,
+          full_name: fullName,
+          birth_date: birthDate,
+          email_verified: true,
+          terms_accepted_at: new Date().toISOString(),
+        },
+        { onConflict: 'id' }
+      );
       if (profileError) {
         setError('Profil oluşturulamadı: ' + profileError.message);
         return;

@@ -13,6 +13,10 @@ export default function Permissions() {
   const [loading, setLoading] = useState(false);
 
   async function registerForPushNotifications() {
+    if (Platform.OS === 'web') {
+      return null; // Web'de push notification desteklemiyoruz, sadece Android/iOS
+    }
+
     if (Platform.OS === 'android') {
       await Notifications.setNotificationChannelAsync('default', {
         name: 'default',
