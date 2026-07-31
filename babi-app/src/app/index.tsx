@@ -114,7 +114,7 @@ export default function Index() {
         <View style={styles.buttons}>
           <TouchableOpacity
             style={styles.primaryButton}
-            onPress={() => router.push('/register/step1')}
+            onPress={() => router.push('/register/account-type')}
           >
             <Text style={styles.primaryButtonText}>Kayıt Ol</Text>
           </TouchableOpacity>

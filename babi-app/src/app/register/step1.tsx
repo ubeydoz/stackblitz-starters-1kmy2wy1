@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
 
 function formatBirthDateInput(text: string): string {
@@ -28,6 +28,7 @@ function getDefaultCalendarView(): string {
 
 export default function Step1() {
   const router = useRouter();
+  const { accountType } = useLocalSearchParams<{ accountType?: string }>();
   const [fullName, setFullName] = useState('');
   const [birthDate, setBirthDate] = useState(''); // YYYY-AA-GG formatında
   const [email, setEmail] = useState('');
@@ -91,7 +92,7 @@ export default function Step1() {
 
     router.push({
       pathname: '/register/verify',
-      params: { fullName, birthDate, email },
+      params: { fullName, birthDate, email, accountType: accountType || 'owner' },
     });
   }
 

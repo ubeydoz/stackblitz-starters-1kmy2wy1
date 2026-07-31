@@ -296,8 +296,8 @@ export default function Profile() {
     setEditing(false);
   }
 
-  function goToCreateBusiness() {
-    router.push('/business/create');
+  function goToManageBusiness() {
+    router.push('/business/manage');
   }
 
   async function handleLogout() {
@@ -435,8 +435,8 @@ export default function Profile() {
         </View>
       )}
 
-      <TouchableOpacity style={styles.businessLinkButton} onPress={goToCreateBusiness}>
-        <Text style={styles.businessLinkText}>🏢 İşletme Profili Ekle</Text>
+      <TouchableOpacity style={styles.businessLinkButton} onPress={goToManageBusiness}>
+        <Text style={styles.businessLinkText}>🏢 İşletmelerimi Yönet</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>

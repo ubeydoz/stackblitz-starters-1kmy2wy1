@@ -5,10 +5,11 @@ import { supabase } from '../../../lib/supabase';
 
 export default function Verify() {
   const router = useRouter();
-  const { fullName, birthDate, email } = useLocalSearchParams<{
+  const { fullName, birthDate, email, accountType } = useLocalSearchParams<{
     fullName: string;
     birthDate: string;
     email: string;
+    accountType?: string;
   }>();
 
   const [code, setCode] = useState('');
@@ -73,7 +74,11 @@ export default function Verify() {
       }
     }
 
-    router.push('/register/step2');
+    if (accountType === 'business') {
+      router.push('/business/create');
+    } else {
+      router.push('/register/step2');
+    }
   }
 
   return (
