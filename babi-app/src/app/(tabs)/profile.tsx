@@ -296,6 +296,10 @@ export default function Profile() {
     setEditing(false);
   }
 
+  function goToCreateBusiness() {
+    router.push('/business/create');
+  }
+
   async function handleLogout() {
     await supabase.auth.signOut();
     router.replace('/');
@@ -431,6 +435,10 @@ export default function Profile() {
         </View>
       )}
 
+      <TouchableOpacity style={styles.businessLinkButton} onPress={goToCreateBusiness}>
+        <Text style={styles.businessLinkText}>🏢 İşletme Profili Ekle</Text>
+      </TouchableOpacity>
+
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Çıkış Yap</Text>
       </TouchableOpacity>
@@ -556,7 +564,9 @@ const styles = StyleSheet.create({
   cancelButtonText: { color: '#9A6B4B', fontWeight: '800', fontSize: 13 },
   saveButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
   saveButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  logoutButton: { marginTop: 24, paddingVertical: 12, paddingHorizontal: 32 },
+  businessLinkButton: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 20 },
+  businessLinkText: { color: '#9A6B4B', fontWeight: '700', fontSize: 13 },
+  logoutButton: { marginTop: 4, paddingVertical: 12, paddingHorizontal: 32 },
   logoutText: { color: '#DC2626', fontWeight: '800', fontSize: 14 },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
