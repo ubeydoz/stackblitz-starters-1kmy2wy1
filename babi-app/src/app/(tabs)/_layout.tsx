@@ -24,6 +24,10 @@ export default function TabsLayout() {
         options={{ title: 'Mesajlar', tabBarIcon: ({ focused }) => <TabIcon emoji="💬" focused={focused} /> }}
       />
       <Tabs.Screen
+        name="events"
+        options={{ title: 'Etkinlikler', tabBarIcon: ({ focused }) => <TabIcon emoji="🎉" focused={focused} /> }}
+      />
+      <Tabs.Screen
         name="library"
         options={{ title: 'Kütüphane', tabBarIcon: ({ focused }) => <TabIcon emoji="📚" focused={focused} /> }}
       />

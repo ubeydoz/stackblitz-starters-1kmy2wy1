@@ -1,8 +1,10 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView, PanResponder, Animated, Dimensions } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView, PanResponder, Animated, Dimensions, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { supabase } from '../../../lib/supabase';
+
+type DogPhoto = { id: string; url: string; position?: number };
 
 type DogCard = {
   id: string;
@@ -10,7 +12,7 @@ type DogCard = {
   breed: string;
   age: number;
   gender: string;
-  photos: { url: string }[];
+  photos: DogPhoto[];
 };
 
 const BREEDS = ['Golden Retriever', 'Labrador', 'Husky', 'Corgi', 'Poodle', 'Bulldog', 'Pomeranian', 'Diğer'];
@@ -23,6 +25,7 @@ export default function Home() {
   const [myDogId, setMyDogId] = useState<string | null>(null);
   const [cards, setCards] = useState<DogCard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [photoIndex, setPhotoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [matchInfo, setMatchInfo] = useState<DogCard | null>(null);
@@ -36,6 +39,10 @@ export default function Home() {
 
   const pan = useRef(new Animated.ValueXY()).current;
   const swipingRef = useRef(false);
+
+  useEffect(() => {
+    setPhotoIndex(0);
+  }, [currentIndex]);
 
   const loadData = useCallback(async () => {
     setLoading(true);
@@ -89,18 +96,20 @@ export default function Home() {
         });
 
         if (!rpcError && nearbyDogs) {
-          // Fotoğrafları ayrıca çek
+          // Tüm fotoğrafları çek (sadece ilk foto değil, hepsi)
           const ids = nearbyDogs.map((d: any) => d.id);
           if (ids.length > 0) {
             const { data: photos } = await supabase
               .from('dog_photos')
-              .select('dog_id, url')
+              .select('id, dog_id, url, position')
               .in('dog_id', ids)
-              .eq('position', 0);
+              .order('position', { ascending: true });
 
             baseDogs = nearbyDogs.map((d: any) => ({
               ...d,
-              photos: photos?.filter(p => p.dog_id === d.id).map(p => ({ url: p.url })) || [],
+              photos: (photos || [])
+                .filter(p => p.dog_id === d.id)
+                .map(p => ({ id: p.id, url: p.url, position: p.position })),
             }));
           }
         }
@@ -113,7 +122,7 @@ export default function Home() {
       // Normal sorgu (mesafe filtresi yok)
       let query = supabase
         .from('dogs')
-        .select('id, name, breed, age, gender, dog_photos(url)')
+        .select('id, name, breed, age, gender, dog_photos(id, url, position)')
         .eq('is_active', true)
         .neq('id', dogId)
         .gte('age', filterMinAge)
@@ -136,13 +145,16 @@ export default function Home() {
         breed: d.breed,
         age: d.age,
         gender: d.gender,
-        photos: (d as any).dog_photos || [],
+        photos: ((d as any).dog_photos || [])
+          .slice()
+          .sort((a: any, b: any) => (a.position ?? 0) - (b.position ?? 0)),
       }));
     }
 
     const filtered = baseDogs.filter(d => !swipedIds.includes(d.id));
     setCards(filtered);
     setCurrentIndex(0);
+    setPhotoIndex(0);
     pan.setValue({ x: 0, y: 0 });
     setLoading(false);
   }, [router, filterBreed, filterGender, filterMinAge, filterMaxAge, filterDistance]);
@@ -151,16 +163,27 @@ export default function Home() {
     loadData();
   }, [loadData]);
 
+  function goToPhoto(direction: 'prev' | 'next') {
+    const current = cards[currentIndex];
+    if (!current || current.photos.length <= 1) return;
+    setPhotoIndex(prev => {
+      if (direction === 'next') return Math.min(prev + 1, current.photos.length - 1);
+      return Math.max(prev - 1, 0);
+    });
+  }
+
   async function handleSwipe(action: 'like' | 'dislike') {
     if (!myDogId || currentIndex >= cards.length || swipingRef.current) return;
     swipingRef.current = true;
 
     const targetDog = cards[currentIndex];
+    const shownPhoto = targetDog.photos[photoIndex] || targetDog.photos[0];
 
     const { error: swipeError } = await supabase.from('swipes').insert({
       swiper_dog_id: myDogId,
       target_dog_id: targetDog.id,
       action,
+      shown_photo_id: shownPhoto?.id || null,
     });
 
     if (swipeError) {
@@ -201,7 +224,7 @@ export default function Home() {
   const panResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 3,
+      onMoveShouldSetPanResponder: (_, gesture) => Math.abs(gesture.dx) > 6,
       onPanResponderMove: (_, gesture) => {
         pan.setValue({ x: gesture.dx, y: gesture.dy });
       },
@@ -375,7 +398,9 @@ export default function Home() {
   }
 
   const current = cards[currentIndex];
-  const photoUrl = current.photos[0]?.url;
+  const activePhoto = current.photos[photoIndex] || current.photos[0];
+  const photoUrl = activePhoto?.url;
+  const hasMultiplePhotos = current.photos.length > 1;
 
   const rotate = pan.x.interpolate({
     inputRange: [-SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2],
@@ -421,6 +446,20 @@ export default function Home() {
             <Text>📷</Text>
           </View>
         )}
+
+        {hasMultiplePhotos ? (
+          <>
+            <View style={styles.progressRow}>
+              {current.photos.map((p, idx) => (
+                <View key={p.id} style={styles.progressTrack}>
+                  <View style={[styles.progressFill, idx <= photoIndex && styles.progressFillActive]} />
+                </View>
+              ))}
+            </View>
+            <Pressable style={styles.tapZoneLeft} onPress={() => goToPhoto('prev')} />
+            <Pressable style={styles.tapZoneRight} onPress={() => goToPhoto('next')} />
+          </>
+        ) : null}
 
         <Animated.View style={[styles.likeLabel, { opacity: likeOpacity }]}>
           <Text style={styles.likeLabelText}>LIKE</Text>
@@ -491,4 +530,11 @@ const styles = StyleSheet.create({
   clearButtonText: { color: '#9A6B4B', fontWeight: '800' },
   applyButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
   applyButtonText: { color: 'white', fontWeight: '800' },
+
+  progressRow: { position: 'absolute', top: 10, left: 10, right: 10, flexDirection: 'row', gap: 4 },
+  progressTrack: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)', overflow: 'hidden' },
+  progressFill: { flex: 1, backgroundColor: 'transparent' },
+  progressFillActive: { backgroundColor: 'white' },
+  tapZoneLeft: { position: 'absolute', top: 0, bottom: '20%', left: 0, width: '50%' },
+  tapZoneRight: { position: 'absolute', top: 0, bottom: '20%', right: 0, width: '50%' },
 });

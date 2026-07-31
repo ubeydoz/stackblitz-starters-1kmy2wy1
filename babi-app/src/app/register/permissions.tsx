@@ -1,7 +1,9 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, Platform } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 import { supabase } from '../../../lib/supabase';
 
 export default function Permissions() {
@@ -10,15 +12,39 @@ export default function Permissions() {
   const [notifEnabled, setNotifEnabled] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  async function registerForPushNotifications() {
+    if (Platform.OS === 'android') {
+      await Notifications.setNotificationChannelAsync('default', {
+        name: 'default',
+        importance: Notifications.AndroidImportance.MAX,
+      });
+    }
+
+    const { status: existingStatus } = await Notifications.getPermissionsAsync();
+    let finalStatus = existingStatus;
+    if (existingStatus !== 'granted') {
+      const { status } = await Notifications.requestPermissionsAsync();
+      finalStatus = status;
+    }
+    if (finalStatus !== 'granted') {
+      return null;
+    }
+
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    return tokenData.data;
+  }
+
   async function handleContinue() {
     setLoading(true);
+
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
 
     if (locationEnabled) {
       const { status } = await Location.requestForegroundPermissionsAsync();
       if (status === 'granted') {
         const loc = await Location.getCurrentPositionAsync({});
-        const { data: userData } = await supabase.auth.getUser();
-        const userId = userData.user?.id;
         if (userId) {
           await supabase
             .from('profiles')
@@ -27,6 +53,16 @@ export default function Permissions() {
             })
             .eq('id', userId);
         }
+      }
+    }
+
+    if (notifEnabled) {
+      const pushToken = await registerForPushNotifications();
+      if (pushToken && userId) {
+        await supabase
+          .from('profiles')
+          .update({ push_token: pushToken, notification_enabled: true })
+          .eq('id', userId);
       }
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 
@@ -16,6 +16,8 @@ export default function Chat() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [myDogId, setMyDogId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [otherOwnerId, setOtherOwnerId] = useState<string | null>(null);
   const listRef = useRef<FlatList>(null);
   const initialized = useRef(false);
 
@@ -27,15 +29,32 @@ export default function Chat() {
 
     async function init() {
       const { data: userData } = await supabase.auth.getUser();
-      const userId = userData.user?.id;
-      if (!userId) {
+      const currentUserId = userData.user?.id;
+      if (!currentUserId) {
         router.replace('/login');
         return;
       }
+      setUserId(currentUserId);
 
-      const { data: myDogs } = await supabase.from('dogs').select('id').eq('owner_id', userId).limit(1);
+      const { data: myDogs } = await supabase.from('dogs').select('id').eq('owner_id', currentUserId).limit(1);
+      let currentMyDogId: string | null = null;
       if (myDogs && myDogs.length > 0) {
-        setMyDogId(myDogs[0].id);
+        currentMyDogId = myDogs[0].id;
+        setMyDogId(currentMyDogId);
+      }
+
+      // Karşı tarafın sahibini bul (Block/Report için gerekli)
+      if (currentMyDogId) {
+        const { data: matchRow } = await supabase
+          .from('matches')
+          .select('dog_a_id, dog_b_id')
+          .eq('id', matchId)
+          .single();
+        if (matchRow) {
+          const otherDogId = matchRow.dog_a_id === currentMyDogId ? matchRow.dog_b_id : matchRow.dog_a_id;
+          const { data: otherDog } = await supabase.from('dogs').select('owner_id').eq('id', otherDogId).single();
+          if (otherDog) setOtherOwnerId(otherDog.owner_id);
+        }
       }
 
       const { data } = await supabase
@@ -78,9 +97,78 @@ export default function Chat() {
     });
   }
 
+  function showOptions() {
+    if (!otherOwnerId) return;
+    Alert.alert(
+      dogName as string,
+      undefined,
+      [
+        { text: 'Şikayet Et', onPress: showReportReasons },
+        { text: 'Engelle', style: 'destructive', onPress: confirmBlock },
+        { text: 'İptal', style: 'cancel' },
+      ]
+    );
+  }
+
+  function showReportReasons() {
+    Alert.alert(
+      'Şikayet Nedeni',
+      'Bu kullanıcıyı neden şikayet ediyorsun?',
+      [
+        { text: 'Sahte Profil', onPress: () => sendReport('sahte_profil') },
+        { text: 'Taciz / Uygunsuz Davranış', onPress: () => sendReport('taciz') },
+        { text: 'Diğer', onPress: () => sendReport('diger') },
+      ]
+    );
+  }
+
+  async function sendReport(reason: 'sahte_profil' | 'taciz' | 'diger') {
+    if (!userId || !otherOwnerId) return;
+    const { error } = await supabase.from('reports').insert({
+      reporter_id: userId,
+      reported_id: otherOwnerId,
+      match_id: matchId,
+      reason,
+    });
+    if (error) {
+      Alert.alert('Hata', 'Bildirim gönderilemedi, tekrar dene.');
+      return;
+    }
+    Alert.alert('Teşekkürler', 'Bildirimin alındı, en kısa sürede incelenecek.');
+  }
+
+  function confirmBlock() {
+    Alert.alert(
+      'Kullanıcıyı Engelle',
+      `${dogName} sahibiyle eşleşmeniz kaldırılacak ve birbirinizi bir daha göremeyeceksiniz. Emin misin?`,
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Engelle', style: 'destructive', onPress: handleBlock },
+      ]
+    );
+  }
+
+  async function handleBlock() {
+    if (!userId || !otherOwnerId) return;
+    const { error } = await supabase.from('blocks').insert({
+      blocker_id: userId,
+      blocked_id: otherOwnerId,
+    });
+    if (error) {
+      Alert.alert('Hata', 'Engelleme işlemi başarısız oldu, tekrar dene.');
+      return;
+    }
+    router.back();
+  }
+
   return (
     <View style={styles.container}>
-      <Text style={styles.header}>{dogName}</Text>
+      <View style={styles.headerRow}>
+        <Text style={styles.header}>{dogName}</Text>
+        <TouchableOpacity style={styles.menuButton} onPress={showOptions}>
+          <Text style={styles.menuDots}>⋯</Text>
+        </TouchableOpacity>
+      </View>
 
       <FlatList
         ref={listRef}
@@ -114,7 +202,10 @@ export default function Chat() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 60 },
-  header: { fontSize: 20, fontWeight: '800', color: '#431407', paddingHorizontal: 20, marginBottom: 12 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 },
+  header: { fontSize: 20, fontWeight: '800', color: '#431407' },
+  menuButton: { paddingHorizontal: 10, paddingVertical: 4 },
+  menuDots: { fontSize: 22, color: '#9A6B4B', fontWeight: '700' },
   messageList: { padding: 16, gap: 8 },
   bubble: { maxWidth: '75%', padding: 12, borderRadius: 16, marginBottom: 8 },
   myBubble: { backgroundColor: '#FB923C', alignSelf: 'flex-end' },

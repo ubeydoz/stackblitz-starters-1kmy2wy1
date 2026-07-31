@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "455858970523",
+    "project_id": "babi-f24ea",
+    "storage_bucket": "babi-f24ea.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:455858970523:android:e95705e10129187fa20b3e",
+        "android_client_info": {
+          "package_name": "com.ubeydoz.babiapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAo1M5XRBYQBQnJMJcxznFCxjz0-Py6QAc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,41 +1,189 @@
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from 'react-native';
 import { useRouter } from 'expo-router';
+import Svg, { Path, Circle } from 'react-native-svg';
+
+const { width } = Dimensions.get('window');
+
+function PawPrint({ color = 'white', size = 80 }: { color?: string; size?: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 100 100">
+      {/* Ana pati */}
+      <Path
+        d="M50 45 C35 45 25 55 25 68 C25 82 35 90 50 90 C65 90 75 82 75 68 C75 55 65 45 50 45Z"
+        fill={color}
+      />
+      {/* Sol üst parmak */}
+      <Circle cx="30" cy="32" r="10" fill={color} />
+      {/* Sağ üst parmak */}
+      <Circle cx="70" cy="32" r="10" fill={color} />
+      {/* Sol orta parmak */}
+      <Circle cx="20" cy="50" r="8" fill={color} />
+      {/* Sağ orta parmak */}
+      <Circle cx="80" cy="50" r="8" fill={color} />
+    </Svg>
+  );
+}
 
 export default function Index() {
   const router = useRouter();
 
+  const paw1Y = useRef(new Animated.Value(100)).current;
+  const paw1Opacity = useRef(new Animated.Value(0)).current;
+  const paw1Scale = useRef(new Animated.Value(0.5)).current;
+
+  const paw2Y = useRef(new Animated.Value(100)).current;
+  const paw2Opacity = useRef(new Animated.Value(0)).current;
+  const paw2Scale = useRef(new Animated.Value(0.5)).current;
+
+  const meetScale = useRef(new Animated.Value(1)).current;
+  const contentOpacity = useRef(new Animated.Value(0)).current;
+  const titleY = useRef(new Animated.Value(30)).current;
+
+  useEffect(() => {
+    Animated.sequence([
+      // Pati 1 aşağıdan yukarı gelir
+      Animated.parallel([
+        Animated.timing(paw1Y, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.timing(paw1Opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.spring(paw1Scale, { toValue: 1, friction: 4, useNativeDriver: true }),
+      ]),
+      // Kısa bekle
+      Animated.delay(100),
+      // Pati 2 aşağıdan yukarı gelir
+      Animated.parallel([
+        Animated.timing(paw2Y, { toValue: 0, duration: 500, useNativeDriver: true }),
+        Animated.timing(paw2Opacity, { toValue: 1, duration: 500, useNativeDriver: true }),
+        Animated.spring(paw2Scale, { toValue: 1, friction: 4, useNativeDriver: true }),
+      ]),
+      // Patiler buluşunca "tok" efekti
+      Animated.delay(150),
+      Animated.sequence([
+        Animated.spring(meetScale, { toValue: 1.2, friction: 3, useNativeDriver: true }),
+        Animated.spring(meetScale, { toValue: 1, friction: 3, useNativeDriver: true }),
+      ]),
+      // İçerik fade in
+      Animated.delay(100),
+      Animated.parallel([
+        Animated.timing(contentOpacity, { toValue: 1, duration: 600, useNativeDriver: true }),
+        Animated.spring(titleY, { toValue: 0, friction: 6, useNativeDriver: true }),
+      ]),
+    ]).start();
+  }, []);
+
   return (
     <View style={styles.container}>
-      <View style={styles.logoBox}>
-        <Text style={styles.logoEmoji}>🐾</Text>
-      </View>
-      <Text style={styles.title}>Babi.App</Text>
-      <Text style={styles.subtitle}>Köpeğiniz için en iyi arkadaşı bulun</Text>
+      {/* Animasyonlu patiler */}
+      <Animated.View
+        style={[
+          styles.pawsContainer,
+          { transform: [{ scale: meetScale }] },
+        ]}
+      >
+        <Animated.View
+          style={{
+            opacity: paw1Opacity,
+            transform: [{ translateY: paw1Y }, { scale: paw1Scale }, { rotate: '-25deg' }],
+          }}
+        >
+          <PawPrint size={90} />
+        </Animated.View>
 
-      <View style={styles.buttons}>
-        <TouchableOpacity style={styles.primaryButton} onPress={() => router.push('/register/step1')}>
-          <Text style={styles.primaryButtonText}>Kayıt Ol</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.secondaryButton} onPress={() => router.push('/login')}>
-          <Text style={styles.secondaryButtonText}>Giriş Yap</Text>
-        </TouchableOpacity>
-      </View>
+        <Animated.View
+          style={{
+            opacity: paw2Opacity,
+            transform: [{ translateY: paw2Y }, { scale: paw2Scale }, { rotate: '25deg' }],
+            marginTop: 20,
+          }}
+        >
+          <PawPrint size={90} />
+        </Animated.View>
+      </Animated.View>
+
+      {/* İçerik */}
+      <Animated.View
+        style={{
+          opacity: contentOpacity,
+          transform: [{ translateY: titleY }],
+          alignItems: 'center',
+        }}
+      >
+        <Text style={styles.title}>Babi</Text>
+        <Text style={styles.subtitle}>Köpeğiniz için en iyi arkadaşı bulun</Text>
+
+        <View style={styles.buttons}>
+          <TouchableOpacity
+            style={styles.primaryButton}
+            onPress={() => router.push('/register/step1')}
+          >
+            <Text style={styles.primaryButtonText}>Kayıt Ol</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.secondaryButton}
+            onPress={() => router.push('/login')}
+          >
+            <Text style={styles.secondaryButtonText}>Giriş Yap</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FB923C', alignItems: 'center', justifyContent: 'center', padding: 24 },
-  logoBox: {
-    width: 96, height: 96, borderRadius: 28, backgroundColor: 'rgba(255,255,255,0.25)',
-    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  container: {
+    flex: 1,
+    backgroundColor: '#FB923C',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 24,
   },
-  logoEmoji: { fontSize: 40 },
-  title: { fontSize: 36, fontWeight: '900', color: 'white' },
-  subtitle: { fontSize: 14, color: 'white', marginTop: 8, textAlign: 'center' },
-  buttons: { width: '100%', maxWidth: 320, marginTop: 64 },
-  primaryButton: { backgroundColor: 'white', borderRadius: 16, paddingVertical: 16, alignItems: 'center' },
-  primaryButtonText: { color: '#FB923C', fontWeight: '800', fontSize: 16 },
-  secondaryButton: { borderWidth: 2, borderColor: 'white', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 12 },
-  secondaryButtonText: { color: 'white', fontWeight: '800', fontSize: 16 },
+  pawsContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    marginBottom: 32,
+    gap: 8,
+  },
+  title: {
+    fontSize: 42,
+    fontWeight: '900',
+    color: 'white',
+    letterSpacing: 2,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: 'white',
+    marginTop: 8,
+    textAlign: 'center',
+    opacity: 0.9,
+  },
+  buttons: {
+    width: '100%',
+    maxWidth: 320,
+    marginTop: 64,
+  },
+  primaryButton: {
+    backgroundColor: 'white',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+  },
+  primaryButtonText: {
+    color: '#FB923C',
+    fontWeight: '800',
+    fontSize: 16,
+  },
+  secondaryButton: {
+    borderWidth: 2,
+    borderColor: 'white',
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: 'center',
+    marginTop: 12,
+  },
+  secondaryButtonText: {
+    color: 'white',
+    fontWeight: '800',
+    fontSize: 16,
+  },
 });
