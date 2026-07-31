@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../../../lib/supabase';
 
 const TYPE_LABELS: Record<string, string> = {
   otel: '🏨 Köpek Oteli',
