@@ -8,19 +8,17 @@ const { width } = Dimensions.get('window');
 function PawPrint({ color = 'white', size = 80 }: { color?: string; size?: number }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 100 100">
-      {/* Ana pati */}
+      {/* Ana pati — kalp esintili yastık */}
       <Path
         d="M50 90 C50 84 38 78 27 65 C21 55 25 45 36 45 C44 45 50 51 50 58 C50 51 56 45 64 45 C75 45 79 55 73 65 C60 80 50 84 50 90 Z"
         fill={color}
       />
-      {/* Sol üst parmak */}
-      <Circle cx="30" cy="32" r="10" fill={color} />
-      {/* Sağ üst parmak */}
-      <Circle cx="70" cy="32" r="10" fill={color} />
-      {/* Sol orta parmak */}
-      <Circle cx="20" cy="50" r="8" fill={color} />
-      {/* Sağ orta parmak */}
-      <Circle cx="80" cy="50" r="8" fill={color} />
+      {/* İki büyük ön parmak (bitişik) */}
+      <Circle cx="40" cy="32" r="11" fill={color} />
+      <Circle cx="60" cy="32" r="11" fill={color} />
+      {/* İki küçük yan parmak (daha aşağıda) */}
+      <Circle cx="24" cy="42" r="8" fill={color} />
+      <Circle cx="76" cy="42" r="8" fill={color} />
     </Svg>
   );
 }
