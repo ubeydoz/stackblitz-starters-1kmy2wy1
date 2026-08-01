@@ -10,7 +10,7 @@ function PawPrint({ color = 'white', size = 80 }: { color?: string; size?: numbe
     <Svg width={size} height={size} viewBox="0 0 100 100">
       {/* Ana pati */}
       <Path
-        d="M50 45 C35 45 25 55 25 68 C25 82 35 90 50 90 C65 90 75 82 75 68 C75 55 65 45 50 45Z"
+        d="M50 90 C50 84 38 78 27 65 C21 55 25 45 36 45 C44 45 50 51 50 58 C50 51 56 45 64 45 C75 45 79 55 73 65 C60 80 50 84 50 90 Z"
         fill={color}
       />
       {/* Sol üst parmak */}
@@ -93,7 +93,7 @@ export default function Index() {
           style={{
             opacity: paw2Opacity,
             transform: [{ translateY: paw2Y }, { scale: paw2Scale }, { rotate: '25deg' }],
-            marginTop: 20,
+            marginTop: 4,
           }}
         >
           <PawPrint size={90} />
@@ -142,7 +142,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginBottom: 32,
-    gap: 8,
+    gap: -32,
   },
   title: {
     fontSize: 42,
