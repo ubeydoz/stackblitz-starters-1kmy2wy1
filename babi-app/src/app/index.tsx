@@ -81,7 +81,7 @@ export default function Index() {
         <Animated.View
           style={{
             opacity: paw1Opacity,
-            transform: [{ translateY: paw1Y }, { scale: paw1Scale }, { rotate: '-25deg' }],
+            transform: [{ translateY: paw1Y }, { scale: paw1Scale }, { rotate: '-25deg' }, { translateX: 12 }],
           }}
         >
           <PawPrint size={90} />
@@ -90,7 +90,7 @@ export default function Index() {
         <Animated.View
           style={{
             opacity: paw2Opacity,
-            transform: [{ translateY: paw2Y }, { scale: paw2Scale }, { rotate: '25deg' }],
+            transform: [{ translateY: paw2Y }, { scale: paw2Scale }, { rotate: '25deg' }, { translateX: -12 }],
             marginTop: 4,
           }}
         >
@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'flex-end',
     marginBottom: 32,
-    gap: -32,
+    gap: -60,
   },
   title: {
     fontSize: 42,
