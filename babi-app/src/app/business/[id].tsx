@@ -6,7 +6,7 @@ import { supabase } from '../../../lib/supabase';
 
 const TYPE_LABELS: Record<string, string> = {
   otel: '🏨 Köpek Oteli',
-  timar_bakim: '✂️ Tımar / Bakım',
+  timar_bakim: '✂️ Pet Kuaför',
   gezdirme: '🐕 Köpek Gezdirme',
 };
 

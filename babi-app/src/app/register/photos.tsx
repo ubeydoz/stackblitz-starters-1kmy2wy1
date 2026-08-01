@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { supabase } from '../../../lib/supabase';
@@ -7,9 +7,11 @@ import { supabase } from '../../../lib/supabase';
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 8;
 
+type LocalPhoto = { uri: string; mimeType: string };
+
 export default function Photos() {
   const router = useRouter();
-  const [photos, setPhotos] = useState<string[]>([]); // local URI'ler
+  const [photos, setPhotos] = useState<LocalPhoto[]>([]);
   const [error, setError] = useState('');
   const [uploading, setUploading] = useState(false);
 
@@ -22,12 +24,23 @@ export default function Photos() {
     });
 
     if (!result.canceled && result.assets?.[0]) {
-      setPhotos(prev => [...prev, result.assets[0].uri]);
+      const asset = result.assets[0];
+      setPhotos(prev => [...prev, { uri: asset.uri, mimeType: asset.mimeType || 'image/jpeg' }]);
     }
   }
 
   function removePhoto(index: number) {
     setPhotos(prev => prev.filter((_, i) => i !== index));
+  }
+
+  function makeMain(index: number) {
+    if (index === 0) return;
+    setPhotos(prev => {
+      const updated = [...prev];
+      const [chosen] = updated.splice(index, 1);
+      updated.unshift(chosen);
+      return updated;
+    });
   }
 
   async function handleFinish() {
@@ -65,51 +78,58 @@ export default function Photos() {
 
     const dogId = dogs[0].id;
 
-    for (let i = 0; i < photos.length; i++) {
-      const uri = photos[i];
-      const response = await fetch(uri);
-      const blob = await response.blob();
-      const fileExt = uri.split('.').pop() || 'jpg';
-      const fileName = `${dogId}/${Date.now()}_${i}.${fileExt}`;
+    try {
+      for (let i = 0; i < photos.length; i++) {
+        const photo = photos[i];
+        const response = await fetch(photo.uri);
+        const arraybuffer = await response.arrayBuffer();
+        const fileExt = photo.mimeType.split('/')[1]?.toLowerCase() || 'jpg';
+        const fileName = `${dogId}/${Date.now()}_${i}.${fileExt}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from('dog-photos')
-        .upload(fileName, blob, { contentType: blob.type || 'image/jpeg' });
+        const { error: uploadError } = await supabase.storage
+          .from('dog-photos')
+          .upload(fileName, arraybuffer, { contentType: photo.mimeType });
 
-      if (uploadError) {
-        setError('Fotoğraf yüklenemedi: ' + uploadError.message);
-        setUploading(false);
-        return;
+        if (uploadError) throw uploadError;
+
+        const { data: publicUrlData } = supabase.storage.from('dog-photos').getPublicUrl(fileName);
+
+        await supabase.from('dog_photos').insert({
+          dog_id: dogId,
+          url: publicUrlData.publicUrl,
+          position: i,
+        });
       }
 
-      const { data: publicUrlData } = supabase.storage.from('dog-photos').getPublicUrl(fileName);
-
-      await supabase.from('dog_photos').insert({
-        dog_id: dogId,
-        url: publicUrlData.publicUrl,
-        position: i,
-      });
+      setUploading(false);
+      router.push('/home');
+    } catch (err: any) {
+      setError('Fotoğraf yüklenemedi: ' + (err?.message || 'Bilinmeyen hata'));
+      setUploading(false);
     }
-
-    setUploading(false);
-    router.push('/home');
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <Text style={styles.title}>Fotoğraflar 📸</Text>
       <Text style={styles.subtitle}>En az {MIN_PHOTOS}, en fazla {MAX_PHOTOS} fotoğraf ekleyin</Text>
+      <Text style={styles.hint}>Bir fotoğrafa dokunarak "Ana" yapabilir, 🗑️ ile silebilirsin.</Text>
 
       <View style={styles.grid}>
-        {photos.map((uri, i) => (
-          <TouchableOpacity key={i} style={styles.photoSlot} onPress={() => removePhoto(i)}>
-            <Image source={{ uri }} style={styles.photo} />
+        {photos.map((photo, i) => (
+          <View key={photo.uri + i} style={styles.photoSlot}>
+            <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => makeMain(i)} activeOpacity={0.85}>
+              <Image source={{ uri: photo.uri }} style={styles.photo} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.deleteButton} onPress={() => removePhoto(i)}>
+              <Text style={styles.deleteButtonIcon}>🗑️</Text>
+            </TouchableOpacity>
             {i === 0 && (
               <View style={styles.mainBadge}>
                 <Text style={styles.mainBadgeText}>ANA</Text>
               </View>
             )}
-          </TouchableOpacity>
+          </View>
         ))}
         {photos.length < MAX_PHOTOS && (
           <TouchableOpacity style={styles.addSlot} onPress={pickImage}>
@@ -128,12 +148,18 @@ export default function Photos() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1 },
+  container: { padding: 24, paddingTop: 60, backgroundColor: '#FFF7ED', flexGrow: 1 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16 },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24 },
+  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
+  hint: { fontSize: 12, color: '#B9977C', marginTop: 6, marginBottom: 24, lineHeight: 17 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  photoSlot: { width: 75, height: 75, borderRadius: 16, overflow: 'hidden' },
+  photoSlot: { width: 75, height: 75, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   photo: { width: '100%', height: '100%' },
+  deleteButton: {
+    position: 'absolute', top: 4, right: 4, width: 22, height: 22, borderRadius: 11,
+    backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
+  },
+  deleteButtonIcon: { fontSize: 11 },
   mainBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(251,146,60,0.9)', paddingVertical: 2 },
   mainBadgeText: { color: 'white', fontSize: 9, fontWeight: '800', textAlign: 'center' },
   addSlot: {

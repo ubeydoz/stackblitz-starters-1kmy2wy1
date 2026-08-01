@@ -29,6 +29,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [matchInfo, setMatchInfo] = useState<DogCard | null>(null);
+  const [hasBusiness, setHasBusiness] = useState(false);
 
   const [filterVisible, setFilterVisible] = useState(false);
   const [filterBreed, setFilterBreed] = useState<string | null>(null);
@@ -47,6 +48,7 @@ export default function Home() {
   const loadData = useCallback(async () => {
     setLoading(true);
     setError('');
+    setHasBusiness(false);
 
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
@@ -62,7 +64,17 @@ export default function Home() {
       .limit(1);
 
     if (myDogError || !myDogs || myDogs.length === 0) {
-      setError('Önce bir köpek profili oluşturmalısınız.');
+      const { data: myBusinesses } = await supabase
+        .from('business_profiles')
+        .select('id')
+        .eq('owner_id', userId)
+        .limit(1);
+
+      if (myBusinesses && myBusinesses.length > 0) {
+        setHasBusiness(true);
+      } else {
+        setError('Önce bir köpek profili oluşturmalısınız.');
+      }
       setLoading(false);
       return;
     }
@@ -351,6 +363,19 @@ export default function Home() {
     return (
       <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color="#FB923C" />
+      </View>
+    );
+  }
+
+  if (hasBusiness) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.emptyText}>
+          Bu bölüm köpek sahipleri için 🐾{'\n'}İşletme profilini buradan yönetebilirsin.
+        </Text>
+        <TouchableOpacity style={styles.button} onPress={() => router.push('/business/manage')}>
+          <Text style={styles.buttonText}>İşletmelerimi Yönet</Text>
+        </TouchableOpacity>
       </View>
     );
   }

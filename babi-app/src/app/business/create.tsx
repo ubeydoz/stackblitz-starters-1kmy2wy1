@@ -7,7 +7,7 @@ import { supabase } from '../../../lib/supabase';
 
 const BUSINESS_TYPES = [
   { key: 'otel', label: '🏨 Köpek Oteli' },
-  { key: 'timar_bakim', label: '✂️ Tımar / Bakım' },
+  { key: 'timar_bakim', label: '✂️ Pet Kuaför' }, 
   { key: 'gezdirme', label: '🐕 Köpek Gezdirme' },
 ] as const;
 

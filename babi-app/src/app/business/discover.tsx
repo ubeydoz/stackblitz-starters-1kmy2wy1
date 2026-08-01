@@ -7,7 +7,7 @@ import { supabase } from '../../../lib/supabase';
 const TYPE_OPTIONS = [
   { key: null, label: 'Tümü' },
   { key: 'otel', label: '🏨 Otel' },
-  { key: 'timar_bakim', label: '✂️ Tımar/Bakım' },
+  { key: 'timar_bakim', label: '✂️ Pet Kuaför' },
   { key: 'gezdirme', label: '🐕 Gezdirme' },
 ] as const;
 

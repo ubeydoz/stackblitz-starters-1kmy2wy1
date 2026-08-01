@@ -60,7 +60,7 @@ export default function Events() {
         <Text style={styles.businessCardEmoji}>🏢</Text>
         <View style={styles.businessCardTextWrap}>
           <Text style={styles.businessCardTitle}>İşletmeleri Keşfet</Text>
-          <Text style={styles.businessCardSubtitle}>Otel, tımar/bakım ve gezdirme hizmeti veren işletmeleri bul</Text>
+          <Text style={styles.businessCardSubtitle}>Otel, pet kuaför ve gezdirme hizmeti veren işletmeleri bul</Text>
         </View>
         <Text style={styles.businessCardChevron}>›</Text>
       </TouchableOpacity>
