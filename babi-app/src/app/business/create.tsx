@@ -3,13 +3,17 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Activi
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
+import { Building2, Scissors, Dog, Stethoscope, PartyPopper, Plus, MapPin, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
-const BUSINESS_TYPES = [
-  { key: 'otel', label: '🏨 Köpek Oteli' },
-  { key: 'timar_bakim', label: '✂️ Pet Kuaför' }, 
-  { key: 'gezdirme', label: '🐕 Köpek Gezdirme' },
-] as const;
+const MOSS = '#6B8F71';
+
+const BUSINESS_TYPES: { key: string; label: string; Icon: LucideIcon }[] = [
+  { key: 'otel', label: 'Köpek Oteli', Icon: Building2 },
+  { key: 'timar_bakim', label: 'Pet Kuaför', Icon: Scissors },
+  { key: 'gezdirme', label: 'Köpek Gezdirme', Icon: Dog },
+  { key: 'veteriner', label: 'Veteriner Kliniği', Icon: Stethoscope },
+];
 
 type BusinessPhoto = { id: string; url: string };
 
@@ -154,7 +158,10 @@ export default function CreateBusiness() {
     // İşletme oluşturuldu, şimdi fotoğraf ekleme aşaması
     return (
       <ScrollView contentContainerStyle={styles.container}>
-        <Text style={styles.title}>Neredeyse Tamam! 🎉</Text>
+        <View style={styles.titleRow}>
+          <PartyPopper size={22} color="#FB923C" />
+          <Text style={styles.title}>Neredeyse Tamam!</Text>
+        </View>
         <Text style={styles.subtitle}>
           {businessName} başarıyla oluşturuldu. İstersen birkaç fotoğraf ekleyerek profilini güçlendir.
         </Text>
@@ -168,7 +175,10 @@ export default function CreateBusiness() {
               {photoUploading ? (
                 <ActivityIndicator color="#FB923C" />
               ) : (
-                <Text style={styles.addPhotoText}>+ Ekle</Text>
+                <>
+                  <Plus size={20} color="#FB923C" strokeWidth={3} />
+                  <Text style={styles.addPhotoText}>Ekle</Text>
+                </>
               )}
             </TouchableOpacity>
           ) : null}
@@ -183,7 +193,10 @@ export default function CreateBusiness() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>İşletme Profili 🏢</Text>
+      <View style={styles.titleRow}>
+        <Building2 size={22} color="#431407" />
+        <Text style={styles.title}>İşletme Profili</Text>
+      </View>
       <Text style={styles.subtitle}>Hizmetini köpek sahipleriyle buluştur</Text>
 
       <Text style={styles.label}>İŞLETME TÜRÜ</Text>
@@ -191,9 +204,10 @@ export default function CreateBusiness() {
         {BUSINESS_TYPES.map(t => (
           <TouchableOpacity
             key={t.key}
-            style={[styles.chip, businessType === t.key && styles.chipActive]}
+            style={[styles.chip, styles.typeChip, businessType === t.key && styles.typeChipActive]}
             onPress={() => setBusinessType(t.key)}
           >
+            <t.Icon size={14} color={businessType === t.key ? 'white' : '#9A6B4B'} />
             <Text style={[styles.chipText, businessType === t.key && styles.chipTextActive]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
@@ -218,13 +232,16 @@ export default function CreateBusiness() {
       <TextInput style={styles.input} value={address} onChangeText={setAddress} placeholder="Mahalle, cadde, ilçe..." />
 
       <Text style={styles.label}>KONUM</Text>
-      <TouchableOpacity style={styles.locationButton} onPress={useCurrentLocation} disabled={locationLoading}>
+      <TouchableOpacity style={[styles.locationButton, styles.locationButtonRow]} onPress={useCurrentLocation} disabled={locationLoading}>
         {locationLoading ? (
           <ActivityIndicator color="#FB923C" />
         ) : (
-          <Text style={styles.locationButtonText}>
-            {locationCoords ? '📍 Konum Eklendi ✓ (Değiştir)' : '📍 Mevcut Konumu Kullan'}
-          </Text>
+          <>
+            <MapPin size={15} color="#FB923C" />
+            <Text style={styles.locationButtonText}>
+              {locationCoords ? 'Konum Eklendi ✓ (Değiştir)' : 'Mevcut Konumu Kullan'}
+            </Text>
+          </>
         )}
       </TouchableOpacity>
 
@@ -239,7 +256,8 @@ export default function CreateBusiness() {
 
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 60 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24, lineHeight: 20 },
   label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 16 },
   input: {
@@ -253,12 +271,15 @@ const styles = StyleSheet.create({
     borderColor: '#FED7AA', backgroundColor: 'white',
   },
   chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
+  typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  typeChipActive: { backgroundColor: MOSS, borderColor: MOSS },
   chipText: { fontSize: 13, fontWeight: '700', color: '#9A6B4B' },
   chipTextActive: { color: 'white' },
   locationButton: {
     backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
     paddingVertical: 14, alignItems: 'center',
   },
+  locationButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
   locationButtonText: { fontSize: 13, fontWeight: '700', color: '#FB923C' },
   errorText: { color: '#DC2626', fontSize: 13, marginTop: 16 },
   button: {

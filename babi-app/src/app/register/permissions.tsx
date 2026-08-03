@@ -108,7 +108,7 @@ export default function Permissions() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, paddingTop: 60 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407' },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24 },
   card: { backgroundColor: 'white', borderRadius: 24, padding: 20, marginBottom: 16 },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },

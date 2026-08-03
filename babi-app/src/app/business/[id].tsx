@@ -2,12 +2,16 @@ import { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, TextInput, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
+import { Building2, Scissors, Dog, Stethoscope, Trash2, Plus, ImageOff, Star, Phone, MapPin, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
-const TYPE_LABELS: Record<string, string> = {
-  otel: '🏨 Köpek Oteli',
-  timar_bakim: '✂️ Pet Kuaför',
-  gezdirme: '🐕 Köpek Gezdirme',
+const MOSS = '#6B8F71';
+
+const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
+  otel: { label: 'Köpek Oteli', Icon: Building2 },
+  timar_bakim: { label: 'Pet Kuaför', Icon: Scissors },
+  gezdirme: { label: 'Köpek Gezdirme', Icon: Dog },
+  veteriner: { label: 'Veteriner Kliniği', Icon: Stethoscope },
 };
 
 type BusinessPhoto = { id: string; url: string };
@@ -178,10 +182,15 @@ export default function BusinessDetail() {
   }
 
   async function deletePhoto(photoId: string) {
+    const photo = photos.find(p => p.id === photoId);
     const { error } = await supabase.from('business_photos').delete().eq('id', photoId);
     if (error) {
       Alert.alert('Hata', 'Silinemedi, tekrar dene.');
       return;
+    }
+    if (photo) {
+      const path = photo.url.split('/dog-photos/')[1];
+      if (path) await supabase.storage.from('dog-photos').remove([path]);
     }
     setPhotos(prev => prev.filter(p => p.id !== photoId));
   }
@@ -235,35 +244,64 @@ export default function BusinessDetail() {
             <Image source={{ uri: p.url }} style={styles.photo} />
             {isOwner ? (
               <TouchableOpacity style={styles.photoDeleteButton} onPress={() => confirmDeletePhoto(p.id)}>
-                <Text style={styles.photoDeleteIcon}>🗑️</Text>
+                <Trash2 size={15} color="white" />
               </TouchableOpacity>
             ) : null}
           </View>
         ))}
         {isOwner && photos.length < 8 ? (
           <TouchableOpacity style={[styles.photoWrap, styles.addPhotoWrap]} onPress={pickPhoto} disabled={photoUploading}>
-            {photoUploading ? <ActivityIndicator color="#FB923C" /> : <Text style={styles.addPhotoText}>+ Fotoğraf Ekle</Text>}
+            {photoUploading ? (
+              <ActivityIndicator color="#FB923C" />
+            ) : (
+              <View style={styles.addPhotoRow}>
+                <Plus size={18} color="#FB923C" strokeWidth={3} />
+                <Text style={styles.addPhotoText}>Fotoğraf Ekle</Text>
+              </View>
+            )}
           </TouchableOpacity>
         ) : null}
         {photos.length === 0 && !isOwner ? (
           <View style={[styles.photoWrap, styles.addPhotoWrap]}>
-            <Text style={{ fontSize: 32 }}>📷</Text>
+            <ImageOff size={32} color="#FB923C" />
           </View>
         ) : null}
       </ScrollView>
 
       {!editing ? (
         <View style={styles.infoBlock}>
-          <Text style={styles.typeLabel}>{TYPE_LABELS[businessType] || businessType}</Text>
+          <View style={styles.typeLabelRow}>
+            {TYPE_LABELS[businessType] ? (
+              <>
+                {(() => { const TypeIcon = TYPE_LABELS[businessType].Icon; return <TypeIcon size={13} color="#FB923C" />; })()}
+                <Text style={styles.typeLabel}>{TYPE_LABELS[businessType].label}</Text>
+              </>
+            ) : (
+              <Text style={styles.typeLabel}>{businessType}</Text>
+            )}
+          </View>
           <Text style={styles.name}>{businessName}</Text>
           {reviews.length > 0 ? (
-            <Text style={styles.ratingSummary}>⭐ {avgRating.toFixed(1)} ({reviews.length} değerlendirme)</Text>
+            <View style={styles.ratingSummaryRow}>
+              <Star size={13} color={MOSS} fill={MOSS} />
+              <Text style={styles.ratingSummaryMoss}>{avgRating.toFixed(1)} ({reviews.length} değerlendirme)</Text>
+            </View>
           ) : (
             <Text style={styles.ratingSummary}>Henüz değerlendirme yok</Text>
           )}
           {description ? <Text style={styles.description}>{description}</Text> : null}
-          {phone ? <Text style={styles.detailLine}>📞 {phone}</Text> : null}
-          {address ? <Text style={styles.detailLine}>📍 {address}</Text> : null}
+          {phone ? (
+            <View style={styles.detailLineRow}>
+              <Phone size={13} color="#5C4033" />
+              <Text style={styles.detailLine}>{phone}</Text>
+            </View>
+          ) : null}
+          {address ? (
+            <View style={styles.detailLineRow}>
+              <MapPin size={13} color="#5C4033" />
+              <Text style={styles.detailLine}>{address}</Text>
+            </View>
+          ) : null}
 
           {isOwner ? (
             <TouchableOpacity style={styles.editButton} onPress={() => setEditing(true)}>
@@ -302,7 +340,7 @@ export default function BusinessDetail() {
           <View style={styles.starRow}>
             {[1, 2, 3, 4, 5].map(n => (
               <TouchableOpacity key={n} onPress={() => setMyRating(n)}>
-                <Text style={[styles.star, n <= myRating && styles.starActive]}>★</Text>
+                <Star size={28} color={n <= myRating ? MOSS : '#FED7AA'} fill={n <= myRating ? MOSS : 'transparent'} />
               </TouchableOpacity>
             ))}
           </View>
@@ -328,7 +366,11 @@ export default function BusinessDetail() {
             <View key={r.id} style={styles.reviewCard}>
               <View style={styles.reviewHeader}>
                 <Text style={styles.reviewerName}>{r.reviewerName}</Text>
-                <Text style={styles.reviewStars}>{'★'.repeat(r.rating)}{'☆'.repeat(5 - r.rating)}</Text>
+                <View style={styles.reviewStarsRow}>
+                  {[1, 2, 3, 4, 5].map(n => (
+                    <Star key={n} size={12} color={MOSS} fill={n <= r.rating ? MOSS : 'transparent'} />
+                  ))}
+                </View>
               </View>
               {r.comment ? <Text style={styles.reviewComment}>{r.comment}</Text> : null}
             </View>
@@ -351,18 +393,22 @@ const styles = StyleSheet.create({
     backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center',
     borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed',
   },
+  addPhotoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   addPhotoText: { color: '#FB923C', fontWeight: '800' },
   photoDeleteButton: {
     position: 'absolute', top: 10, right: 10, width: 34, height: 34, borderRadius: 17,
     backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
   },
-  photoDeleteIcon: { fontSize: 15 },
   infoBlock: { paddingHorizontal: 20, marginTop: 16 },
+  typeLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   typeLabel: { fontSize: 12, fontWeight: '800', color: '#FB923C' },
-  name: { fontSize: 22, fontWeight: '900', color: '#431407', marginTop: 4 },
+  name: { fontSize: 22, fontWeight: '900', color: '#431407', marginTop: 4, fontFamily: 'Fredoka_700Bold' },
+  ratingSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
   ratingSummary: { fontSize: 13, color: '#9A6B4B', marginTop: 6, fontWeight: '700' },
+  ratingSummaryMoss: { fontSize: 13, color: MOSS, fontWeight: '700' },
   description: { fontSize: 14, color: '#5C4033', marginTop: 12, lineHeight: 20 },
-  detailLine: { fontSize: 13, color: '#5C4033', marginTop: 8 },
+  detailLineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
+  detailLine: { fontSize: 13, color: '#5C4033' },
   editButton: { marginTop: 16, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
   editButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
   editForm: { paddingHorizontal: 20, marginTop: 16 },
@@ -380,8 +426,6 @@ const styles = StyleSheet.create({
   reviewForm: { paddingHorizontal: 20, marginTop: 24, backgroundColor: 'white', marginHorizontal: 20, borderRadius: 16, padding: 16 },
   sectionTitle: { fontSize: 15, fontWeight: '800', color: '#431407', marginBottom: 10 },
   starRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
-  star: { fontSize: 28, color: '#FED7AA' },
-  starActive: { color: '#FB923C' },
   submitReviewButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
   submitReviewText: { color: 'white', fontWeight: '800', fontSize: 13 },
   reviewsList: { paddingHorizontal: 20, marginTop: 24 },
@@ -389,6 +433,6 @@ const styles = StyleSheet.create({
   reviewCard: { backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10 },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   reviewerName: { fontSize: 13, fontWeight: '800', color: '#431407' },
-  reviewStars: { fontSize: 13, color: '#FB923C' },
+  reviewStarsRow: { flexDirection: 'row', gap: 2 },
   reviewComment: { fontSize: 13, color: '#5C4033', marginTop: 8, lineHeight: 19 },
 });

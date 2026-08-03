@@ -1,8 +1,8 @@
 import { Tabs } from 'expo-router';
-import { Text } from 'react-native';
+import { PawPrint, MessageCircle, Compass, BookOpen, Syringe, User, LucideIcon } from 'lucide-react-native';
 
-function TabIcon({ emoji, focused }: { emoji: string; focused: boolean }) {
-  return <Text style={{ fontSize: 20, opacity: focused ? 1 : 0.4 }}>{emoji}</Text>;
+function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
+  return <Icon size={22} color={focused ? '#FB923C' : '#9A6B4B'} strokeWidth={focused ? 2.4 : 2} />;
 }
 
 export default function TabsLayout() {
@@ -17,27 +17,27 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="home"
-        options={{ title: 'Eşleştir', tabBarIcon: ({ focused }) => <TabIcon emoji="🐾" focused={focused} /> }}
+        options={{ title: 'Eşleştir', tabBarIcon: ({ focused }) => <TabIcon Icon={PawPrint} focused={focused} /> }}
       />
       <Tabs.Screen
         name="matches"
-        options={{ title: 'Mesajlar', tabBarIcon: ({ focused }) => <TabIcon emoji="💬" focused={focused} /> }}
+        options={{ title: 'Mesajlar', tabBarIcon: ({ focused }) => <TabIcon Icon={MessageCircle} focused={focused} /> }}
       />
       <Tabs.Screen
         name="events"
-        options={{ title: 'Etkinlikler', tabBarIcon: ({ focused }) => <TabIcon emoji="🎉" focused={focused} /> }}
+        options={{ title: 'Keşfet', tabBarIcon: ({ focused }) => <TabIcon Icon={Compass} focused={focused} /> }}
       />
       <Tabs.Screen
         name="library"
-        options={{ title: 'Kütüphane', tabBarIcon: ({ focused }) => <TabIcon emoji="📚" focused={focused} /> }}
+        options={{ title: 'Kütüphane', tabBarIcon: ({ focused }) => <TabIcon Icon={BookOpen} focused={focused} /> }}
       />
       <Tabs.Screen
         name="health"
-        options={{ title: 'Sağlık', tabBarIcon: ({ focused }) => <TabIcon emoji="💉" focused={focused} /> }}
+        options={{ title: 'Sağlık', tabBarIcon: ({ focused }) => <TabIcon Icon={Syringe} focused={focused} /> }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: 'Profil', tabBarIcon: ({ focused }) => <TabIcon emoji="👤" focused={focused} /> }}
+        options={{ title: 'Profil', tabBarIcon: ({ focused }) => <TabIcon Icon={User} focused={focused} /> }}
       />
     </Tabs>
   );

@@ -1,9 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView, TextInput, Alert, Modal } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useRouter, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
+import { ImageOff, Plus, X, Star, GripVertical, Trash2, Building2, Pencil } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
+
+const MOSS = '#6B8F71';
 
 type DogPhoto = { id: string; url: string; position?: number };
 
@@ -24,6 +27,8 @@ export default function Profile() {
   const [galleryVisible, setGalleryVisible] = useState(false);
   const [reorderMode, setReorderMode] = useState(false);
   const [reordering, setReordering] = useState(false);
+  const [settingMain, setSettingMain] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
   const [bestPhotoId, setBestPhotoId] = useState<string | null>(null);
 
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -36,9 +41,11 @@ export default function Profile() {
   const [tiktok, setTiktok] = useState('');
   const [snapchat, setSnapchat] = useState('');
 
-  useEffect(() => {
-    loadProfile();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      loadProfile();
+    }, [])
+  );
 
   async function loadProfile() {
     setLoading(true);
@@ -187,6 +194,10 @@ export default function Profile() {
     const { data: userData } = await supabase.auth.getUser();
     const userId = userData.user?.id;
     if (!userId) return;
+    if (avatarUrl) {
+      const path = avatarUrl.split('/dog-photos/')[1];
+      if (path) await supabase.storage.from('dog-photos').remove([path]);
+    }
     await supabase.from('profiles').update({ avatar_url: null }).eq('id', userId);
     setAvatarUrl(null);
   }
@@ -265,10 +276,15 @@ export default function Profile() {
   }
 
   async function deletePhoto(photoId: string) {
+    const photo = dogPhotos.find(p => p.id === photoId);
     const { error } = await supabase.from('dog_photos').delete().eq('id', photoId);
     if (error) {
       Alert.alert('Hata', 'Fotoğraf silinemedi, tekrar dene.');
       return;
+    }
+    if (photo) {
+      const path = photo.url.split('/dog-photos/')[1];
+      if (path) await supabase.storage.from('dog-photos').remove([path]);
     }
     const updated = dogPhotos.filter(p => p.id !== photoId);
     setDogPhotos(updated);
@@ -277,6 +293,27 @@ export default function Profile() {
     }
     if (bestPhotoId === photoId) {
       setBestPhotoId(null);
+    }
+  }
+
+  async function setMainPhoto(photoId: string) {
+    const target = dogPhotos.find(p => p.id === photoId);
+    if (!target || dogPhotos[0]?.id === photoId) return;
+
+    const reordered = [target, ...dogPhotos.filter(p => p.id !== photoId)];
+    setDogPhotos(reordered);
+    setPhotoUrl(reordered[0]?.url || null);
+    setSettingMain(true);
+    try {
+      await Promise.all(
+        reordered.map((photo, index) =>
+          supabase.from('dog_photos').update({ position: index }).eq('id', photo.id)
+        )
+      );
+    } catch (err) {
+      Alert.alert('Hata', 'Ana fotoğraf ayarlanamadı, tekrar dene.');
+    } finally {
+      setSettingMain(false);
     }
   }
 
@@ -311,10 +348,15 @@ export default function Profile() {
           <Text style={styles.reorderIndex}>{index + 1}. Fotoğraf</Text>
           <View style={styles.reorderBadgeRow}>
             {index === 0 ? <Text style={styles.reorderMainBadge}>Ana Foto</Text> : null}
-            {item.id === bestPhotoId ? <Text style={styles.reorderBestBadge}>⭐ En Beğenilen</Text> : null}
+            {item.id === bestPhotoId ? (
+              <View style={styles.reorderBestBadgeRow}>
+                <Star size={11} color={MOSS} fill={MOSS} />
+                <Text style={styles.reorderBestBadge}>En Beğenilen</Text>
+              </View>
+            ) : null}
           </View>
         </View>
-        <Text style={styles.reorderHandle}>☰</Text>
+        <GripVertical size={20} color="#9A6B4B" />
       </TouchableOpacity>
     );
   }
@@ -341,8 +383,85 @@ export default function Profile() {
   }
 
   async function handleLogout() {
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (userId) {
+      await supabase.from('profiles').update({ push_token: null, notification_enabled: false }).eq('id', userId);
+    }
     await supabase.auth.signOut();
     router.replace('/');
+  }
+
+  function confirmDeleteAccount() {
+    Alert.alert(
+      'Hesabını Sil',
+      'Bu işlem geri alınamaz. Köpeğin, fotoğrafların, mesajların, eşleşmelerin ve varsa işletme profillerin kalıcı olarak silinecek.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Devam Et', style: 'destructive', onPress: confirmDeleteAccountFinal },
+      ]
+    );
+  }
+
+  function confirmDeleteAccountFinal() {
+    Alert.alert(
+      'Son Kez Soruyoruz',
+      'Hesabını ve tüm verilerini kalıcı olarak silmek istediğine emin misin? Bu işlem geri alınamaz.',
+      [
+        { text: 'Vazgeç', style: 'cancel' },
+        { text: 'Evet, Hesabımı Sil', style: 'destructive', onPress: deleteAccount },
+      ]
+    );
+  }
+
+  async function deleteAccount() {
+    setDeletingAccount(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const userId = userData.user?.id;
+      if (!userId) {
+        setDeletingAccount(false);
+        return;
+      }
+
+      const pathsToRemove: string[] = [];
+      if (avatarUrl) {
+        const path = avatarUrl.split('/dog-photos/')[1];
+        if (path) pathsToRemove.push(path);
+      }
+      dogPhotos.forEach(photo => {
+        const path = photo.url.split('/dog-photos/')[1];
+        if (path) pathsToRemove.push(path);
+      });
+
+      const { data: businesses } = await supabase
+        .from('business_profiles')
+        .select('id, business_photos(url)')
+        .eq('owner_id', userId);
+      (businesses || []).forEach((b: any) => {
+        (b.business_photos || []).forEach((bp: any) => {
+          const path = bp.url.split('/dog-photos/')[1];
+          if (path) pathsToRemove.push(path);
+        });
+      });
+
+      if (pathsToRemove.length > 0) {
+        await supabase.storage.from('dog-photos').remove(pathsToRemove);
+      }
+
+      const { error: rpcError } = await supabase.rpc('delete_own_account');
+      if (rpcError) {
+        Alert.alert('Hata', 'Hesap silinemedi: ' + rpcError.message);
+        setDeletingAccount(false);
+        return;
+      }
+
+      await supabase.auth.signOut();
+      router.replace('/');
+    } catch (err) {
+      Alert.alert('Hata', 'Hesap silinirken bir sorun oluştu, tekrar dene.');
+      setDeletingAccount(false);
+    }
   }
 
   if (loading) {
@@ -361,7 +480,7 @@ export default function Profile() {
             <Image source={{ uri: photoUrl }} style={styles.heroPhoto} />
           ) : (
             <View style={[styles.heroPhoto, styles.noPhoto]}>
-              <Text>📷</Text>
+              <ImageOff size={28} color="#FB923C" />
             </View>
           )}
         </TouchableOpacity>
@@ -369,13 +488,20 @@ export default function Profile() {
           {photoUploading ? (
             <ActivityIndicator size="small" color="white" />
           ) : (
-            <Text style={styles.heroAddButtonText}>+</Text>
+            <Plus size={22} color="white" strokeWidth={3} />
           )}
         </TouchableOpacity>
       </View>
 
-      <Text style={styles.dogName}>{dogName}{dogAge ? `, ${dogAge}` : ''}</Text>
-      <Text style={styles.dogBreed}>{dogBreed}</Text>
+      <View style={styles.dogNameRow}>
+        <View>
+          <Text style={styles.dogName}>{dogName}{dogAge ? `, ${dogAge}` : ''}</Text>
+          <Text style={styles.dogBreed}>{dogBreed}</Text>
+        </View>
+        <TouchableOpacity style={styles.editDogButton} onPress={() => router.push('/dog/edit')}>
+          <Pencil size={14} color="#FB923C" />
+        </TouchableOpacity>
+      </View>
 
       <View style={styles.ownerCard}>
         <View style={styles.ownerRow}>
@@ -387,7 +513,7 @@ export default function Profile() {
                 {avatarUploading ? (
                   <ActivityIndicator size="small" color="#FB923C" />
                 ) : (
-                  <Text style={styles.ownerAvatarPlus}>+</Text>
+                  <Plus size={18} color="#FB923C" strokeWidth={3} />
                 )}
               </View>
             )}
@@ -475,12 +601,17 @@ export default function Profile() {
         </View>
       )}
 
-      <TouchableOpacity style={styles.businessLinkButton} onPress={goToManageBusiness}>
-        <Text style={styles.businessLinkText}>🏢 İşletmelerimi Yönet</Text>
+      <TouchableOpacity style={styles.businessLinkButtonRow} onPress={goToManageBusiness}>
+        <Building2 size={14} color="#9A6B4B" />
+        <Text style={styles.businessLinkText}>İşletmelerimi Yönet</Text>
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Çıkış Yap</Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity style={styles.deleteAccountButton} onPress={confirmDeleteAccount} disabled={deletingAccount}>
+        <Text style={styles.deleteAccountText}>{deletingAccount ? 'Siliniyor...' : 'Hesabımı Sil'}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -501,7 +632,7 @@ export default function Profile() {
                   <Text style={styles.modalReorderToggle}>{reorderMode ? 'Bitti' : 'Sırala'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setGalleryVisible(false); setReorderMode(false); }}>
-                  <Text style={styles.modalClose}>✕</Text>
+                  <X size={20} color="#9A6B4B" />
                 </TouchableOpacity>
               </View>
             </View>
@@ -525,20 +656,39 @@ export default function Profile() {
             ) : (
               <>
                 <ScrollView horizontal pagingEnabled showsHorizontalScrollIndicator={false}>
-                  {dogPhotos.map(photo => (
+                  {dogPhotos.map((photo, index) => (
                     <View key={photo.id} style={styles.galleryPage}>
                       <Image source={{ uri: photo.url }} style={styles.galleryFullImage} />
+                      {index === 0 ? (
+                        <View style={styles.mainPhotoBadge}>
+                          <Text style={styles.mainPhotoBadgeText}>Ana Foto</Text>
+                        </View>
+                      ) : null}
                       {photo.id === bestPhotoId ? (
                         <View style={styles.bestPhotoBadge}>
-                          <Text style={styles.bestPhotoBadgeText}>⭐ En Beğenilen</Text>
+                          <Star size={12} color="white" fill="white" />
+                          <Text style={styles.bestPhotoBadgeText}>En Beğenilen</Text>
                         </View>
                       ) : null}
                       <TouchableOpacity
                         style={styles.galleryDeleteButton}
                         onPress={() => confirmDeletePhoto(photo.id)}
                       >
-                        <Text style={styles.galleryDeleteIcon}>🗑️</Text>
+                        <Trash2 size={16} color="white" />
                       </TouchableOpacity>
+                      {index !== 0 ? (
+                        <TouchableOpacity
+                          style={styles.galleryMainButton}
+                          onPress={() => setMainPhoto(photo.id)}
+                          disabled={settingMain}
+                        >
+                          {settingMain ? (
+                            <ActivityIndicator size="small" color="white" />
+                          ) : (
+                            <Text style={styles.galleryMainButtonText}>Ana Foto Yap</Text>
+                          )}
+                        </TouchableOpacity>
+                      ) : null}
                     </View>
                   ))}
                   {dogPhotos.length < 8 ? (
@@ -550,7 +700,10 @@ export default function Profile() {
                       {photoUploading ? (
                         <ActivityIndicator color="#FB923C" />
                       ) : (
-                        <Text style={styles.galleryAddText}>+ Fotoğraf{'\n'}Ekle</Text>
+                        <>
+                          <Plus size={22} color="#FB923C" strokeWidth={3} />
+                          <Text style={styles.galleryAddText}>Fotoğraf{'\n'}Ekle</Text>
+                        </>
                       )}
                     </TouchableOpacity>
                   ) : null}
@@ -579,14 +732,17 @@ const styles = StyleSheet.create({
     backgroundColor: '#FB923C', alignItems: 'center', justifyContent: 'center',
     borderWidth: 3, borderColor: '#FFF7ED',
   },
-  heroAddButtonText: { color: 'white', fontSize: 20, fontWeight: '900', marginTop: -2 },
-  dogName: { fontSize: 22, fontWeight: '900', color: '#431407' },
-  dogBreed: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 20 },
+  dogNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
+  dogName: { fontSize: 22, fontWeight: '900', color: '#431407', fontFamily: 'Fredoka_700Bold' },
+  dogBreed: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
+  editDogButton: {
+    width: 30, height: 30, borderRadius: 15, backgroundColor: 'white',
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA',
+  },
   ownerCard: { backgroundColor: 'white', borderRadius: 16, padding: 16, width: '100%', maxWidth: 320 },
   ownerRow: { flexDirection: 'row', alignItems: 'center' },
   ownerAvatar: { width: 48, height: 48, borderRadius: 24 },
   noOwnerAvatar: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
-  ownerAvatarPlus: { fontSize: 20, color: '#FB923C', fontWeight: '800' },
   ownerTextWrap: { marginLeft: 12, flex: 1 },
   ownerLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1 },
   ownerName: { fontSize: 16, fontWeight: '700', color: '#431407', marginTop: 4 },
@@ -609,10 +765,12 @@ const styles = StyleSheet.create({
   cancelButtonText: { color: '#9A6B4B', fontWeight: '800', fontSize: 13 },
   saveButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
   saveButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  businessLinkButton: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 20 },
+  businessLinkButtonRow: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 6 },
   businessLinkText: { color: '#9A6B4B', fontWeight: '700', fontSize: 13 },
   logoutButton: { marginTop: 4, paddingVertical: 12, paddingHorizontal: 32 },
   logoutText: { color: '#DC2626', fontWeight: '800', fontSize: 14 },
+  deleteAccountButton: { marginTop: 0, paddingVertical: 10, paddingHorizontal: 24 },
+  deleteAccountText: { color: '#9A6B4B', fontWeight: '700', fontSize: 12, textDecorationLine: 'underline' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36, maxHeight: '80%' },
@@ -620,25 +778,35 @@ const styles = StyleSheet.create({
   modalTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
   modalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   modalReorderToggle: { color: '#FB923C', fontWeight: '800', fontSize: 13 },
-  modalClose: { fontSize: 20, color: '#9A6B4B', padding: 4 },
   galleryPage: { width: 280, height: 280, borderRadius: 20, overflow: 'hidden', marginRight: 12, position: 'relative' },
   galleryFullImage: { width: '100%', height: '100%' },
   galleryDeleteButton: {
     position: 'absolute', top: 10, right: 10, width: 36, height: 36, borderRadius: 18,
     backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
   },
-  galleryDeleteIcon: { fontSize: 16 },
   galleryAddPage: {
     backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed',
+    borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed', gap: 6,
   },
   galleryAddText: { color: '#FB923C', fontWeight: '800', fontSize: 14, textAlign: 'center' },
   galleryHint: { fontSize: 11, color: '#9A6B4B', marginTop: 12, textAlign: 'center' },
   bestPhotoBadge: {
-    position: 'absolute', top: 10, left: 10, backgroundColor: '#FB923C',
+    position: 'absolute', top: 10, left: 10, backgroundColor: MOSS,
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
   },
   bestPhotoBadgeText: { color: 'white', fontWeight: '800', fontSize: 11 },
+  mainPhotoBadge: {
+    position: 'absolute', top: 10, right: 54, backgroundColor: 'rgba(0,0,0,0.55)',
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
+  },
+  mainPhotoBadgeText: { color: 'white', fontWeight: '800', fontSize: 11 },
+  galleryMainButton: {
+    position: 'absolute', bottom: 10, left: 10, right: 10,
+    backgroundColor: 'rgba(251,146,60,0.92)', borderRadius: 12,
+    paddingVertical: 9, alignItems: 'center', justifyContent: 'center', minHeight: 34,
+  },
+  galleryMainButtonText: { color: 'white', fontWeight: '800', fontSize: 12 },
 
   reorderHint: { fontSize: 12, color: '#9A6B4B', marginBottom: 12, lineHeight: 18 },
   reorderList: { maxHeight: 360 },
@@ -652,6 +820,6 @@ const styles = StyleSheet.create({
   reorderIndex: { fontSize: 13, fontWeight: '700', color: '#431407' },
   reorderBadgeRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
   reorderMainBadge: { fontSize: 10, fontWeight: '800', color: '#FB923C' },
-  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: '#DC9C00' },
-  reorderHandle: { fontSize: 20, color: '#9A6B4B', paddingHorizontal: 8 },
+  reorderBestBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
+  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: MOSS },
 });

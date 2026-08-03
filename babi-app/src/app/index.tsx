@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Animated, TouchableOpacity, Dimensions, ActivityIndicator } from 'react-native';
 import { useRouter } from 'expo-router';
 import Svg, { Path, Circle } from 'react-native-svg';
+import { supabase } from '../../lib/supabase';
 
 const { width } = Dimensions.get('window');
 
@@ -25,6 +26,7 @@ function PawPrint({ color = 'white', size = 80 }: { color?: string; size?: numbe
 
 export default function Index() {
   const router = useRouter();
+  const [checkingSession, setCheckingSession] = useState(true);
 
   const paw1Y = useRef(new Animated.Value(100)).current;
   const paw1Opacity = useRef(new Animated.Value(0)).current;
@@ -39,6 +41,18 @@ export default function Index() {
   const titleY = useRef(new Animated.Value(30)).current;
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) {
+        router.replace('/home');
+      } else {
+        setCheckingSession(false);
+      }
+    });
+  }, []);
+
+  useEffect(() => {
+    if (checkingSession) return;
+
     Animated.sequence([
       // Pati 1 aşağıdan yukarı gelir
       Animated.parallel([
@@ -67,7 +81,15 @@ export default function Index() {
         Animated.spring(titleY, { toValue: 0, friction: 6, useNativeDriver: true }),
       ]),
     ]).start();
-  }, []);
+  }, [checkingSession]);
+
+  if (checkingSession) {
+    return (
+      <View style={[styles.container, { justifyContent: 'center' }]}>
+        <ActivityIndicator size="large" color="white" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { BookOpen, Bot } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
 type Article = {
@@ -78,7 +79,10 @@ export default function Library() {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Kütüphane</Text>
+      <View style={styles.titleRow}>
+        <BookOpen size={22} color="#431407" />
+        <Text style={styles.title}>Kütüphane</Text>
+      </View>
 
       <TextInput
         style={styles.searchInput}
@@ -97,7 +101,10 @@ export default function Library() {
           ListEmptyComponent={<Text style={styles.emptyText}>Sonuç bulunamadı.</Text>}
           ListFooterComponent={
             <View style={styles.aiSection}>
-              <Text style={styles.aiSectionTitle}>🤖 AI'ya Sor</Text>
+              <View style={styles.aiSectionTitleRow}>
+                <Bot size={18} color="#431407" />
+                <Text style={styles.aiSectionTitle}>AI'ya Sor</Text>
+              </View>
               <Text style={styles.aiSectionSubtitle}>
                 Aradığını bulamadın mı? Köpeğinin durumunu yapay zekaya sor.
               </Text>
@@ -138,7 +145,8 @@ export default function Library() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 60 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginBottom: 16 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   searchInput: {
     backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
     paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, color: '#431407', marginBottom: 16,
@@ -152,7 +160,8 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '800', color: '#431407', marginBottom: 6 },
   cardBody: { fontSize: 13, color: '#9A6B4B', lineHeight: 20 },
   aiSection: { marginTop: 24, backgroundColor: '#FFEDD5', borderRadius: 20, padding: 18 },
-  aiSectionTitle: { fontSize: 16, fontWeight: '800', color: '#431407', marginBottom: 4 },
+  aiSectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
+  aiSectionTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
   aiSectionSubtitle: { fontSize: 12, color: '#9A6B4B', marginBottom: 14 },
   aiInput: {
     backgroundColor: 'white', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,

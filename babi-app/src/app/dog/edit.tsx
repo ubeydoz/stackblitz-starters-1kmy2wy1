@@ -1,7 +1,7 @@
-import { useState, useMemo } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal } from 'react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { X } from 'lucide-react-native';
+import { X, ChevronDown } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
 const BREEDS = [
@@ -31,8 +31,12 @@ const BREEDS = [
 
 const PURPOSES = ['Oyun arkadaşı', 'Yürüyüş arkadaşı', 'Çiftleşme', 'Sosyalleşme'];
 
-export default function Step2() {
+export default function EditDog() {
   const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [dogId, setDogId] = useState<string | null>(null);
+
   const [dogName, setDogName] = useState('');
   const [breed, setBreed] = useState('');
   const [breedModalVisible, setBreedModalVisible] = useState(false);
@@ -42,7 +46,42 @@ export default function Step2() {
   const [gender, setGender] = useState<'male' | 'female'>('female');
   const [purposes, setPurposes] = useState<string[]>([]);
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    loadDog();
+  }, []);
+
+  async function loadDog() {
+    setLoading(true);
+    const { data: userData } = await supabase.auth.getUser();
+    const userId = userData.user?.id;
+    if (!userId) {
+      router.replace('/login');
+      return;
+    }
+
+    const { data: dogs } = await supabase
+      .from('dogs')
+      .select('id, name, breed, age, weight, gender, purpose')
+      .eq('owner_id', userId)
+      .limit(1);
+
+    if (!dogs || dogs.length === 0) {
+      Alert.alert('Hata', 'Köpek bulunamadı.');
+      router.back();
+      return;
+    }
+
+    const dog = dogs[0];
+    setDogId(dog.id);
+    setDogName(dog.name || '');
+    setBreed(dog.breed || '');
+    setAge(dog.age != null ? String(dog.age) : '');
+    setWeight(dog.weight != null ? String(dog.weight) : '');
+    setGender((dog.gender as 'male' | 'female') || 'female');
+    setPurposes(dog.purpose || []);
+    setLoading(false);
+  }
 
   const filteredBreeds = useMemo(() => {
     if (!breedSearch.trim()) return BREEDS;
@@ -60,7 +99,7 @@ export default function Step2() {
     setBreedSearch('');
   }
 
-  async function handleContinue() {
+  async function handleSave() {
     setError('');
 
     if (!dogName.trim()) {
@@ -81,41 +120,46 @@ export default function Step2() {
       setError('Geçerli bir kilo girin (kg).');
       return;
     }
+    if (!dogId) return;
 
-    setLoading(true);
-    const { data: userData } = await supabase.auth.getUser();
-    const ownerId = userData.user?.id;
+    setSaving(true);
+    const { error: updateError } = await supabase
+      .from('dogs')
+      .update({
+        name: dogName.trim(),
+        breed,
+        age: ageNum,
+        weight: weightNum,
+        gender,
+        purpose: purposes,
+      })
+      .eq('id', dogId);
+    setSaving(false);
 
-    if (!ownerId) {
-      setError('Oturum bulunamadı, lütfen tekrar giriş yapın.');
-      setLoading(false);
+    if (updateError) {
+      setError('Kaydedilemedi: ' + updateError.message);
       return;
     }
 
-    const { error: insertError } = await supabase.from('dogs').insert({
-      owner_id: ownerId,
-      name: dogName,
-      breed,
-      age: ageNum,
-      weight: weightNum,
-      gender,
-      purpose: purposes,
-    });
+    router.back();
+  }
 
-    setLoading(false);
-
-    if (insertError) {
-      setError('Kaydedilemedi: ' + insertError.message);
-      return;
-    }
-
-    router.push('/register/permissions');
+  if (loading) {
+    return (
+      <View style={styles.centerContainer}>
+        <ActivityIndicator size="large" color="#FB923C" />
+      </View>
+    );
   }
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>Köpeğiniz 🐾</Text>
-      <Text style={styles.subtitle}>Dostunuz hakkında bilgi verin</Text>
+      <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <Text style={styles.backButtonText}>‹ Geri</Text>
+      </TouchableOpacity>
+
+      <Text style={styles.title}>Köpek Bilgilerini Düzenle</Text>
+      <Text style={styles.subtitle}>Dostunuz hakkındaki bilgileri güncelle</Text>
 
       <Text style={styles.label}>KÖPEĞİN ADI</Text>
       <TextInput style={styles.input} value={dogName} onChangeText={setDogName} placeholder="Örn: Bella" />
@@ -125,7 +169,7 @@ export default function Step2() {
         <Text style={breed ? styles.breedSelectorText : styles.breedSelectorPlaceholder}>
           {breed || 'Irk seç...'}
         </Text>
-        <Text style={styles.breedSelectorChevron}>▾</Text>
+        <ChevronDown size={16} color="#9A6B4B" />
       </TouchableOpacity>
 
       <View style={styles.row}>
@@ -181,8 +225,8 @@ export default function Step2() {
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
 
-      <TouchableOpacity style={styles.button} onPress={handleContinue} disabled={loading}>
-        <Text style={styles.buttonText}>{loading ? 'Kaydediliyor...' : 'Devam Et →'}</Text>
+      <TouchableOpacity style={styles.button} onPress={handleSave} disabled={saving}>
+        <Text style={styles.buttonText}>{saving ? 'Kaydediliyor...' : 'Kaydet'}</Text>
       </TouchableOpacity>
 
       <Modal
@@ -226,8 +270,11 @@ export default function Step2() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16, fontFamily: 'Fredoka_700Bold' },
+  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 60 },
+  centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
+  backButton: { marginBottom: 8 },
+  backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 8, fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24 },
   label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 16 },
   input: {
@@ -241,7 +288,6 @@ const styles = StyleSheet.create({
   },
   breedSelectorText: { fontSize: 14, color: '#431407', fontWeight: '600' },
   breedSelectorPlaceholder: { fontSize: 14, color: '#B9977C' },
-  breedSelectorChevron: { fontSize: 14, color: '#9A6B4B' },
   row: { flexDirection: 'row' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {

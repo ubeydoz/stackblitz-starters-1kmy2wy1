@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, Image, ActivityIndicator, Modal, ScrollView, PanResponder, Animated, Dimensions, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
+import { ImageOff, X, Heart, PartyPopper } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
 type DogPhoto = { id: string; url: string; position?: number };
@@ -394,7 +395,7 @@ export default function Home() {
   if (matchInfo) {
     return (
       <View style={styles.centerContainer}>
-        <Text style={styles.matchEmoji}>🎉</Text>
+        <PartyPopper size={64} color="#FB923C" />
         <Text style={styles.matchTitle}>Eşleştiniz!</Text>
         <Text style={styles.matchSubtitle}>{matchInfo.name} ile artık mesajlaşabilirsiniz</Text>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/matches')}>
@@ -468,7 +469,7 @@ export default function Home() {
           <Image source={{ uri: photoUrl }} style={styles.cardImage} />
         ) : (
           <View style={[styles.cardImage, styles.noPhoto]}>
-            <Text>📷</Text>
+            <ImageOff size={32} color="#FB923C" />
           </View>
         )}
 
@@ -501,10 +502,10 @@ export default function Home() {
 
       <View style={styles.actions}>
         <TouchableOpacity style={[styles.actionButton, styles.dislikeButton]} onPress={() => animateSwipeOut('dislike')}>
-          <Text style={styles.actionIcon}>✕</Text>
+          <X size={28} color="#EF4444" strokeWidth={2.5} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, styles.likeButton]} onPress={() => animateSwipeOut('like')}>
-          <Text style={styles.actionIcon}>♥</Text>
+          <Heart size={26} color="white" fill="white" />
         </TouchableOpacity>
       </View>
     </View>
@@ -515,7 +516,7 @@ const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', paddingTop: 60, padding: 20 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', padding: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: 360, marginBottom: 16 },
-  headerTitle: { fontSize: 18, fontWeight: '900', color: '#431407' },
+  headerTitle: { fontSize: 18, fontWeight: '900', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   headerLink: { fontSize: 14, fontWeight: '700', color: '#FB923C' },
   card: { width: '100%', maxWidth: 360, aspectRatio: 0.75, borderRadius: 24, overflow: 'hidden', backgroundColor: 'white' },
   cardImage: { width: '100%', height: '80%' },
@@ -534,8 +535,7 @@ const styles = StyleSheet.create({
   actionIcon: { fontSize: 28, color: '#431407' },
   errorText: { fontSize: 14, color: '#DC2626', textAlign: 'center' },
   emptyText: { fontSize: 16, color: '#431407', textAlign: 'center', marginBottom: 16 },
-  matchEmoji: { fontSize: 64 },
-  matchTitle: { fontSize: 28, fontWeight: '900', color: '#431407', marginTop: 8 },
+  matchTitle: { fontSize: 28, fontWeight: '900', color: '#431407', marginTop: 12, fontFamily: 'Fredoka_700Bold' },
   matchSubtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, textAlign: 'center' },
   button: { backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24 },
   buttonText: { color: 'white', fontSize: 14, fontWeight: '800' },

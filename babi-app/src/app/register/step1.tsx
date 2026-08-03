@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Platform, Modal } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { Calendar } from 'react-native-calendars';
+import { Calendar as CalendarIcon, X } from 'lucide-react-native';
 
 function formatBirthDateInput(text: string): string {
   const digits = text.replace(/\D/g, '').slice(0, 8); // YYYYAAGG, en fazla 8 rakam
@@ -120,7 +121,7 @@ export default function Step1() {
           maxLength={10}
         />
         <TouchableOpacity style={styles.calendarButton} onPress={() => setCalendarVisible(true)}>
-          <Text style={styles.calendarButtonIcon}>📅</Text>
+          <CalendarIcon size={20} color="#FB923C" />
         </TouchableOpacity>
       </View>
 
@@ -164,7 +165,7 @@ export default function Step1() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Doğum Tarihi Seç</Text>
               <TouchableOpacity onPress={() => setCalendarVisible(false)}>
-                <Text style={styles.modalClose}>✕</Text>
+                <X size={20} color="#9A6B4B" />
               </TouchableOpacity>
             </View>
             <Calendar
@@ -188,7 +189,7 @@ export default function Step1() {
 
 const styles = StyleSheet.create({
   container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16, fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24 },
   label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 16 },
   input: {
@@ -201,7 +202,6 @@ const styles = StyleSheet.create({
     width: 50, height: 50, borderRadius: 16, backgroundColor: 'white',
     borderWidth: 1, borderColor: '#FED7AA', alignItems: 'center', justifyContent: 'center',
   },
-  calendarButtonIcon: { fontSize: 20 },
   checkboxRow: { flexDirection: 'row', alignItems: 'flex-start', marginTop: 20, gap: 10 },
   checkbox: { width: 20, height: 20, borderRadius: 6, borderWidth: 2, borderColor: '#FB923C', marginTop: 2 },
   checkboxChecked: { backgroundColor: '#FB923C' },
@@ -216,6 +216,5 @@ const styles = StyleSheet.create({
   modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36 },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   modalTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
-  modalClose: { fontSize: 20, color: '#9A6B4B', padding: 4 },
   modalHint: { fontSize: 11, color: '#9A6B4B', marginTop: 12, textAlign: 'center' },
 });

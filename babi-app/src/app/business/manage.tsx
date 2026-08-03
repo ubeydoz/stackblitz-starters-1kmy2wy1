@@ -1,12 +1,16 @@
 import { useEffect, useState } from 'react';
 import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
+import { Building2, Scissors, Dog, Stethoscope, ImageOff, Star, ChevronRight, Plus, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
-const TYPE_LABELS: Record<string, string> = {
-  otel: '🏨 Köpek Oteli',
-  timar_bakim: '✂️ Pet Kuaför',
-  gezdirme: '🐕 Köpek Gezdirme',
+const MOSS = '#6B8F71';
+
+const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
+  otel: { label: 'Köpek Oteli', Icon: Building2 },
+  timar_bakim: { label: 'Pet Kuaför', Icon: Scissors },
+  gezdirme: { label: 'Köpek Gezdirme', Icon: Dog },
+  veteriner: { label: 'Veteriner Kliniği', Icon: Stethoscope },
 };
 
 type BusinessItem = {
@@ -71,7 +75,10 @@ export default function ManageBusinesses() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      <Text style={styles.title}>İşletmelerim 🏢</Text>
+      <View style={styles.titleRow}>
+        <Building2 size={22} color="#431407" />
+        <Text style={styles.title}>İşletmelerim</Text>
+      </View>
       <Text style={styles.subtitle}>Profillerini yönet, yorumlarını gör</Text>
 
       {businesses.length === 0 ? (
@@ -89,25 +96,38 @@ export default function ManageBusinesses() {
               <Image source={{ uri: b.photoUrl }} style={styles.cardPhoto} />
             ) : (
               <View style={[styles.cardPhoto, styles.cardPhotoEmpty]}>
-                <Text style={{ fontSize: 24 }}>📷</Text>
+                <ImageOff size={22} color="#FB923C" />
               </View>
             )}
             <View style={styles.cardInfo}>
               <Text style={styles.cardName}>{b.business_name}</Text>
-              <Text style={styles.cardType}>{TYPE_LABELS[b.business_type] || b.business_type}</Text>
-              <Text style={styles.cardRating}>
-                {b.reviewCount > 0
-                  ? `⭐ ${b.avgRating.toFixed(1)} (${b.reviewCount} değerlendirme)`
-                  : 'Henüz değerlendirme yok'}
-              </Text>
+              <View style={styles.cardTypeRow}>
+                {TYPE_LABELS[b.business_type] ? (
+                  <>
+                    {(() => { const TypeIcon = TYPE_LABELS[b.business_type].Icon; return <TypeIcon size={11} color="#9A6B4B" />; })()}
+                    <Text style={styles.cardType}>{TYPE_LABELS[b.business_type].label}</Text>
+                  </>
+                ) : (
+                  <Text style={styles.cardType}>{b.business_type}</Text>
+                )}
+              </View>
+              {b.reviewCount > 0 ? (
+                <View style={styles.cardRatingRow}>
+                  <Star size={11} color={MOSS} fill={MOSS} />
+                  <Text style={styles.cardRatingMoss}>{b.avgRating.toFixed(1)} ({b.reviewCount} değerlendirme)</Text>
+                </View>
+              ) : (
+                <Text style={styles.cardRating}>Henüz değerlendirme yok</Text>
+              )}
             </View>
-            <Text style={styles.chevron}>›</Text>
+            <ChevronRight size={22} color="#FED7AA" />
           </TouchableOpacity>
         ))
       )}
 
-      <TouchableOpacity style={styles.addButton} onPress={() => router.push('/business/create')}>
-        <Text style={styles.addButtonText}>+ Yeni İşletme Ekle</Text>
+      <TouchableOpacity style={[styles.addButton, styles.addButtonRow]} onPress={() => router.push('/business/create')}>
+        <Plus size={16} color="white" strokeWidth={3} />
+        <Text style={styles.addButtonText}>Yeni İşletme Ekle</Text>
       </TouchableOpacity>
     </ScrollView>
   );
@@ -116,7 +136,8 @@ export default function ManageBusinesses() {
 const styles = StyleSheet.create({
   container: { padding: 20, paddingTop: 60, backgroundColor: '#FFF7ED', flexGrow: 1 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 20 },
   emptyState: { backgroundColor: 'white', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16 },
   emptyText: { fontSize: 14, color: '#9A6B4B' },
@@ -128,11 +149,14 @@ const styles = StyleSheet.create({
   cardPhotoEmpty: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, marginLeft: 12 },
   cardName: { fontSize: 15, fontWeight: '800', color: '#431407' },
-  cardType: { fontSize: 12, color: '#9A6B4B', marginTop: 2 },
-  cardRating: { fontSize: 12, color: '#FB923C', fontWeight: '700', marginTop: 4 },
-  chevron: { fontSize: 24, color: '#FED7AA' },
+  cardTypeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
+  cardType: { fontSize: 12, color: '#9A6B4B' },
+  cardRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
+  cardRating: { fontSize: 12, color: '#9A6B4B', fontWeight: '700', marginTop: 4 },
+  cardRatingMoss: { fontSize: 12, color: MOSS, fontWeight: '700' },
   addButton: {
     backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8,
   },
+  addButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
   addButtonText: { color: 'white', fontWeight: '800', fontSize: 14 },
 });

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { MoreVertical } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
 
 type Message = {
@@ -166,7 +167,7 @@ export default function Chat() {
       <View style={styles.headerRow}>
         <Text style={styles.header}>{dogName}</Text>
         <TouchableOpacity style={styles.menuButton} onPress={showOptions}>
-          <Text style={styles.menuDots}>⋯</Text>
+          <MoreVertical size={22} color="#9A6B4B" />
         </TouchableOpacity>
       </View>
 
@@ -203,9 +204,8 @@ export default function Chat() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 60 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 },
-  header: { fontSize: 20, fontWeight: '800', color: '#431407' },
+  header: { fontSize: 20, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   menuButton: { paddingHorizontal: 10, paddingVertical: 4 },
-  menuDots: { fontSize: 22, color: '#9A6B4B', fontWeight: '700' },
   messageList: { padding: 16, gap: 8 },
   bubble: { maxWidth: '75%', padding: 12, borderRadius: 16, marginBottom: 8 },
   myBubble: { backgroundColor: '#FB923C', alignSelf: 'flex-end' },
