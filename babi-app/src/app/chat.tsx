@@ -202,7 +202,7 @@ export default function Chat() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 64 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 },
   header: { fontSize: 20, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   menuButton: { paddingHorizontal: 10, paddingVertical: 4 },

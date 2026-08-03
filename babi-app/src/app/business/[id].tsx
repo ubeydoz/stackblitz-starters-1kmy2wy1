@@ -6,6 +6,13 @@ import { Building2, Scissors, Dog, Stethoscope, Trash2, Plus, ImageOff, Star, Ph
 import { supabase } from '../../../lib/supabase';
 
 const MOSS = '#6B8F71';
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
 
 const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
   otel: { label: 'Köpek Oteli', Icon: Building2 },
@@ -382,7 +389,7 @@ export default function BusinessDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: { backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 50, paddingBottom: 40 },
+  container: { backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64, paddingBottom: 40 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
   backButton: { paddingHorizontal: 20, marginBottom: 8 },
   backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },
@@ -430,7 +437,7 @@ const styles = StyleSheet.create({
   submitReviewText: { color: 'white', fontWeight: '800', fontSize: 13 },
   reviewsList: { paddingHorizontal: 20, marginTop: 24 },
   noReviewsText: { fontSize: 13, color: '#9A6B4B' },
-  reviewCard: { backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10 },
+  reviewCard: { backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10, ...CARD_SHADOW },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   reviewerName: { fontSize: 13, fontWeight: '800', color: '#431407' },
   reviewStarsRow: { flexDirection: 'row', gap: 2 },

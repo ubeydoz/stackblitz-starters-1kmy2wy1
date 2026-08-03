@@ -2,6 +2,14 @@ import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-nati
 import { useRouter } from 'expo-router';
 import { Dog, Building2 } from 'lucide-react-native';
 
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 export default function AccountType() {
   const router = useRouter();
 
@@ -34,12 +42,12 @@ export default function AccountType() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 80, alignItems: 'center' },
+  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64, alignItems: 'center' },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', textAlign: 'center', fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, marginBottom: 32, textAlign: 'center', maxWidth: 280 },
   card: {
     backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340,
-    marginBottom: 16, borderWidth: 2, borderColor: '#FED7AA', alignItems: 'center',
+    marginBottom: 16, borderWidth: 2, borderColor: '#FED7AA', alignItems: 'center', ...CARD_SHADOW,
   },
   cardIcon: { marginBottom: 12 },
   cardTitle: { fontSize: 18, fontWeight: '800', color: '#431407' },

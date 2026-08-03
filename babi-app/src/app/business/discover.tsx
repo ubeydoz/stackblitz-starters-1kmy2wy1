@@ -6,6 +6,14 @@ import { Search, Building2, Scissors, Dog, Stethoscope, ImageOff, Star, LucideIc
 import { supabase } from '../../../lib/supabase';
 
 const MOSS = '#6B8F71';
+const TEAL = '#0891A6';
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
 
 const TYPE_OPTIONS: { key: string | null; label: string; Icon: LucideIcon | null }[] = [
   { key: null, label: 'Tümü', Icon: null },
@@ -192,7 +200,7 @@ export default function DiscoverBusinesses() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 60, paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 64, paddingHorizontal: 20 },
   backButton: { marginBottom: 8 },
   backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
@@ -205,7 +213,7 @@ const styles = StyleSheet.create({
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
   chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  typeChipActive: { backgroundColor: MOSS, borderColor: MOSS },
+  typeChipActive: { backgroundColor: TEAL, borderColor: TEAL },
   chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
   chipTextActive: { color: 'white' },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 100 },
@@ -214,7 +222,7 @@ const styles = StyleSheet.create({
   retryButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
   emptyText: { fontSize: 14, color: '#9A6B4B', textAlign: 'center' },
   list: { paddingBottom: 40 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 16, padding: 12, marginBottom: 10 },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW },
   cardPhoto: { width: 64, height: 64, borderRadius: 12 },
   cardPhotoEmpty: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, marginLeft: 12 },

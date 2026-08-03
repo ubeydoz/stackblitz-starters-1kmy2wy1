@@ -156,7 +156,7 @@ export default function Photos() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, paddingTop: 60, backgroundColor: '#FFF7ED', flexGrow: 1 },
+  container: { padding: 24, paddingTop: 64, backgroundColor: '#FFF7ED', flexGrow: 1 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16, fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
   hint: { fontSize: 12, color: '#B9977C', marginTop: 6, marginBottom: 24, lineHeight: 17 },

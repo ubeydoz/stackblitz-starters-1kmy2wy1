@@ -6,7 +6,15 @@ import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flat
 import { ImageOff, Plus, X, Star, GripVertical, Trash2, Building2, Pencil } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
-const MOSS = '#6B8F71';
+const TEAL = '#0891A6';
+const TEAL_DARK = '#066670';
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
 
 type DogPhoto = { id: string; url: string; position?: number };
 
@@ -350,7 +358,7 @@ export default function Profile() {
             {index === 0 ? <Text style={styles.reorderMainBadge}>Ana Foto</Text> : null}
             {item.id === bestPhotoId ? (
               <View style={styles.reorderBestBadgeRow}>
-                <Star size={11} color={MOSS} fill={MOSS} />
+                <Star size={11} color={TEAL_DARK} fill={TEAL_DARK} />
                 <Text style={styles.reorderBestBadge}>En Beğenilen</Text>
               </View>
             ) : null}
@@ -722,7 +730,7 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 60, backgroundColor: '#FFF7ED', flexGrow: 1, alignItems: 'center' },
+  container: { padding: 20, paddingTop: 96, backgroundColor: '#FFF7ED', flexGrow: 1, alignItems: 'center' },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
   heroWrap: { position: 'relative', marginBottom: 16 },
   heroPhoto: { width: 140, height: 140, borderRadius: 70 },
@@ -739,7 +747,7 @@ const styles = StyleSheet.create({
     width: 30, height: 30, borderRadius: 15, backgroundColor: 'white',
     alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA',
   },
-  ownerCard: { backgroundColor: 'white', borderRadius: 16, padding: 16, width: '100%', maxWidth: 320 },
+  ownerCard: { backgroundColor: 'white', borderRadius: 16, padding: 16, width: '100%', maxWidth: 320, ...CARD_SHADOW },
   ownerRow: { flexDirection: 'row', alignItems: 'center' },
   ownerAvatar: { width: 48, height: 48, borderRadius: 24 },
   noOwnerAvatar: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
@@ -791,7 +799,7 @@ const styles = StyleSheet.create({
   galleryAddText: { color: '#FB923C', fontWeight: '800', fontSize: 14, textAlign: 'center' },
   galleryHint: { fontSize: 11, color: '#9A6B4B', marginTop: 12, textAlign: 'center' },
   bestPhotoBadge: {
-    position: 'absolute', top: 10, left: 10, backgroundColor: MOSS,
+    position: 'absolute', top: 10, left: 10, backgroundColor: TEAL_DARK,
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
@@ -821,5 +829,5 @@ const styles = StyleSheet.create({
   reorderBadgeRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
   reorderMainBadge: { fontSize: 10, fontWeight: '800', color: '#FB923C' },
   reorderBestBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: MOSS },
+  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: TEAL_DARK },
 });

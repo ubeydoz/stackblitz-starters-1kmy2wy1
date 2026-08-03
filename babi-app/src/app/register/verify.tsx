@@ -114,7 +114,7 @@ export default function Verify() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, alignItems: 'center', paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, alignItems: 'center', paddingTop: 64 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, textAlign: 'center', maxWidth: 280 },
   codeInput: {

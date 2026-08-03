@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Building2, Scissors, Dog, Stethoscope, PartyPopper, Plus, MapPin, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
-const MOSS = '#6B8F71';
+const TEAL = '#0891A6';
 
 const BUSINESS_TYPES: { key: string; label: string; Icon: LucideIcon }[] = [
   { key: 'otel', label: 'Köpek Oteli', Icon: Building2 },
@@ -255,7 +255,7 @@ export default function CreateBusiness() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 60 },
+  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24, lineHeight: 20 },
@@ -272,7 +272,7 @@ const styles = StyleSheet.create({
   },
   chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  typeChipActive: { backgroundColor: MOSS, borderColor: MOSS },
+  typeChipActive: { backgroundColor: TEAL, borderColor: TEAL },
   chipText: { fontSize: 13, fontWeight: '700', color: '#9A6B4B' },
   chipTextActive: { color: 'white' },
   locationButton: {

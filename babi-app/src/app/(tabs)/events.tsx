@@ -3,6 +3,14 @@ import { useRouter } from 'expo-router';
 import * as Location from 'expo-location';
 import { Compass, Trees, Building2, ChevronRight, Calendar } from 'lucide-react-native';
 
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 export default function Events() {
   const router = useRouter();
 
@@ -78,25 +86,25 @@ export default function Events() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   sectionTitle: { fontSize: 13, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 12, marginTop: 8 },
   mapButtonFull: {
     backgroundColor: 'white', borderRadius: 16, padding: 18, marginBottom: 20,
-    alignItems: 'center', borderWidth: 1, borderColor: '#FED7AA',
+    alignItems: 'center', borderWidth: 1, borderColor: '#FED7AA', ...CARD_SHADOW,
   },
   mapButtonIcon: { marginBottom: 8 },
   mapButtonTitle: { fontSize: 13, fontWeight: '800', color: '#431407', textAlign: 'center' },
   mapButtonSubtitle: { fontSize: 11, color: '#FB923C', fontWeight: '700', marginTop: 2 },
   businessCard: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: 'white',
-    borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#FED7AA',
+    borderRadius: 16, padding: 16, marginBottom: 20, borderWidth: 1, borderColor: '#FED7AA', ...CARD_SHADOW,
   },
   businessCardTextWrap: { flex: 1 },
   businessCardTitle: { fontSize: 14, fontWeight: '800', color: '#431407' },
   businessCardSubtitle: { fontSize: 11, color: '#9A6B4B', marginTop: 3, lineHeight: 16 },
-  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12 },
+  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, ...CARD_SHADOW },
   cardTitle: { fontSize: 15, fontWeight: '800', color: '#431407', marginBottom: 4 },
   cardDateRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginBottom: 6 },
   cardDate: { fontSize: 12, color: '#FB923C', fontWeight: '700' },

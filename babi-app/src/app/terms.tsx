@@ -56,7 +56,7 @@ export default function Terms() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, paddingTop: 60, backgroundColor: '#FFF7ED' },
+  container: { padding: 24, paddingTop: 64, backgroundColor: '#FFF7ED' },
   backLink: { color: '#FB923C', fontWeight: '700', fontSize: 14, marginBottom: 20 },
   title: { fontSize: 22, fontWeight: '900', color: '#431407', marginBottom: 8 },
   updated: { fontSize: 12, color: '#9A6B4B', marginBottom: 24 },

@@ -4,6 +4,14 @@ import { useRouter } from 'expo-router';
 import { Heart, MoreVertical } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 type MatchItem = {
   matchId: string;
   otherDogId: string;
@@ -238,8 +246,8 @@ export default function Matches() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 60, paddingBottom: 40 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 60 },
+  container: { flexGrow: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64, paddingBottom: 40 },
+  center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
   emptyText: { fontSize: 14, color: '#9A6B4B' },
@@ -256,7 +264,7 @@ const styles = StyleSheet.create({
   emptyConversationsText: { fontSize: 13, color: '#9A6B4B', lineHeight: 19 },
   row: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.87)',
-    borderRadius: 16, padding: 12, marginBottom: 10,
+    borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW,
   },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },

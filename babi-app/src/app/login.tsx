@@ -92,8 +92,8 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, paddingTop: 80 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginBottom: 24 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, paddingTop: 40, justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginBottom: 24, fontFamily: 'Fredoka_700Bold' },
   label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6 },
   input: {
     backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',

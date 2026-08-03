@@ -8,6 +8,15 @@ import {
 } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 
+const TEAL = '#0891A6';
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
+
 type RecordType = 'vaccine' | 'checkup' | 'medication' | 'other';
 
 type HealthRecord = {
@@ -192,6 +201,20 @@ export default function Health() {
     setModalVisible(true);
   }
 
+  function openModalForCategory(category: 'all' | RecordType) {
+    resetForm();
+    setError('');
+    if (category !== 'all') {
+      const match = HEALTH_ITEMS.find(h => h.record_type === category);
+      if (match) {
+        setNewItemKey(match.key);
+        if (match.key !== 'checkup' && match.key !== 'other') setNewTitle(match.label);
+      }
+    }
+    setFormStep('form');
+    setModalVisible(true);
+  }
+
   function typeLabel(type: string) {
     return CATEGORY_FILTERS.find(t => t.value === type)?.label || type;
   }
@@ -357,7 +380,7 @@ export default function Health() {
           {CATEGORY_FILTERS.map(cat => (
             <TouchableOpacity
               key={cat.value}
-              style={[styles.categoryChip, styles.chipIconRow, categoryFilter === cat.value && styles.chipActive]}
+              style={[styles.categoryChip, styles.chipIconRow, categoryFilter === cat.value && styles.categoryChipActive]}
               onPress={() => setCategoryFilter(cat.value)}
             >
               {cat.Icon ? <cat.Icon size={13} color={categoryFilter === cat.value ? 'white' : '#9A6B4B'} /> : null}
@@ -430,16 +453,24 @@ export default function Health() {
         </ScrollView>
       ) : (
         filteredRecords.length === 0 ? (
-          <View style={styles.center}>
-            <Text style={styles.emptyText}>
-              {categoryFilter === 'all' ? 'Henüz sağlık kaydı yok.' : `Bu kategoride kayıt yok.`}
-            </Text>
-            <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
-            <TouchableOpacity style={[styles.emptyButton, styles.iconRow, styles.iconRowCenter]} onPress={openModal}>
-              <Plus size={15} color="white" strokeWidth={3} />
-              <Text style={styles.emptyButtonText}>İlk Kaydı Ekle</Text>
-            </TouchableOpacity>
-          </View>
+          (() => {
+            const EmptyIcon = typeIcon(categoryFilter);
+            return (
+              <View style={styles.emptyCategoryState}>
+                <View style={styles.emptyCategoryIconWrap}>
+                  <EmptyIcon size={32} color="#FB923C" />
+                </View>
+                <Text style={styles.emptyText}>
+                  {categoryFilter === 'all' ? 'Henüz sağlık kaydı yok.' : `Henüz ${typeLabel(categoryFilter)} kaydı yok.`}
+                </Text>
+                <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
+                <TouchableOpacity style={[styles.emptyButton, styles.iconRow, styles.iconRowCenter]} onPress={() => openModalForCategory(categoryFilter)}>
+                  <Plus size={15} color="white" strokeWidth={3} />
+                  <Text style={styles.emptyButtonText}>+ Ekle</Text>
+                </TouchableOpacity>
+              </View>
+            );
+          })()
         ) : (
           <FlatList
             data={filteredRecords}
@@ -481,7 +512,7 @@ export default function Health() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 60 },
+  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
@@ -500,6 +531,7 @@ const styles = StyleSheet.create({
   categoryScroll: { marginBottom: 12 },
   categoryRow: { gap: 8, paddingRight: 8 },
   categoryChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
+  categoryChipActive: { backgroundColor: TEAL, borderColor: TEAL },
   legendRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 8, marginTop: 8, marginBottom: 4 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
@@ -508,11 +540,16 @@ const styles = StyleSheet.create({
   noRecordText: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginTop: 16 },
   addForDateButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 20, marginTop: 12, alignSelf: 'center' },
   addForDateButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  emptyText: { fontSize: 16, fontWeight: '700', color: '#431407', marginBottom: 8 },
+  emptyCategoryState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyCategoryIconWrap: {
+    width: 64, height: 64, borderRadius: 32, backgroundColor: '#FFEDD5',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 16,
+  },
+  emptyText: { fontSize: 16, fontWeight: '700', color: '#431407', marginBottom: 8, textAlign: 'center' },
   emptySubtext: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginBottom: 20, maxWidth: 260 },
   emptyButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
   emptyButtonText: { color: 'white', fontWeight: '800' },
-  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12 },
+  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, ...CARD_SHADOW },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   typeTag: { backgroundColor: '#FFEDD5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
   typeTagText: { color: '#FB923C', fontSize: 11, fontWeight: '800' },

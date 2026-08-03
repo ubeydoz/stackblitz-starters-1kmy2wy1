@@ -270,7 +270,7 @@ export default function EditDog() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 60 },
+  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
   backButton: { marginBottom: 8 },
   backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },

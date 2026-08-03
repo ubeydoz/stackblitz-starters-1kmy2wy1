@@ -5,6 +5,13 @@ import { Building2, Scissors, Dog, Stethoscope, ImageOff, Star, ChevronRight, Pl
 import { supabase } from '../../../lib/supabase';
 
 const MOSS = '#6B8F71';
+const CARD_SHADOW = {
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 4 },
+  shadowOpacity: 0.08,
+  shadowRadius: 12,
+  elevation: 3,
+};
 
 const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
   otel: { label: 'Köpek Oteli', Icon: Building2 },
@@ -134,7 +141,7 @@ export default function ManageBusinesses() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 60, backgroundColor: '#FFF7ED', flexGrow: 1 },
+  container: { padding: 20, paddingTop: 64, backgroundColor: '#FFF7ED', flexGrow: 1 },
   centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
@@ -143,7 +150,7 @@ const styles = StyleSheet.create({
   emptyText: { fontSize: 14, color: '#9A6B4B' },
   card: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: 'white',
-    borderRadius: 16, padding: 12, marginBottom: 10,
+    borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW,
   },
   cardPhoto: { width: 60, height: 60, borderRadius: 12 },
   cardPhotoEmpty: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
