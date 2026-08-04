@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator, Linking, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, TextInput, Modal, ActivityIndicator, Linking, ScrollView, KeyboardAvoidingView, Platform, Keyboard } from 'react-native';
 import * as Location from 'expo-location';
 import { Calendar } from 'react-native-calendars';
 import {
@@ -234,12 +234,18 @@ export default function Health() {
   return (
     <View style={styles.container}>
       <Modal visible={modalVisible} animationType="slide" transparent>
-        <View style={styles.modalOverlay}>
+        <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
+          <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
 
             {formStep === 'form' && (
-              <ScrollView showsVerticalScrollIndicator={false}>
-                <Text style={styles.modalTitle}>Yeni Kayıt Ekle</Text>
+              <ScrollView showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled" onScrollBeginDrag={Keyboard.dismiss}>
+                <View style={styles.modalTitleRow}>
+                  <Text style={styles.modalTitleNoMargin}>Yeni Kayıt Ekle</Text>
+                  <TouchableOpacity onPress={() => Keyboard.dismiss()}>
+                    <Text style={styles.modalDoneText}>Bitti</Text>
+                  </TouchableOpacity>
+                </View>
 
                 <Text style={styles.fieldLabel}>TÜR</Text>
                 <View style={styles.chipRow}>
@@ -336,7 +342,8 @@ export default function Health() {
             )}
 
           </View>
-        </View>
+          </View>
+        </KeyboardAvoidingView>
       </Modal>
 
       <View style={styles.header}>
@@ -560,6 +567,9 @@ const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
   modalTitle: { fontSize: 20, fontWeight: '800', color: COLORS.ink, marginBottom: 16 },
+  modalTitleRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  modalTitleNoMargin: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
+  modalDoneText: { fontSize: 13, fontWeight: '800', color: COLORS.teal },
   fieldLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
