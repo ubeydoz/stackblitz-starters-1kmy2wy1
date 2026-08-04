@@ -531,7 +531,7 @@ const styles = StyleSheet.create({
   toggleTextActive: { color: COLORS.white },
   categoryScroll: { marginBottom: 12 },
   categoryRow: { gap: 8, paddingRight: 8 },
-  categoryChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  categoryChip: { height: 34, paddingHorizontal: 12, borderRadius: 17, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white, justifyContent: 'center' },
   categoryChipActive: { backgroundColor: COLORS.teal, borderColor: COLORS.teal },
   legendRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 8, marginTop: 8, marginBottom: 4 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
