@@ -59,7 +59,7 @@ export default function Terms() {
 const styles = StyleSheet.create({
   container: { padding: 24, paddingTop: 64, backgroundColor: COLORS.cream },
   backLink: { color: COLORS.clay, fontWeight: '700', fontSize: 14, marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: '900', color: COLORS.ink, marginBottom: 8 },
+  title: { fontSize: 22, fontWeight: '900', color: COLORS.ink, marginBottom: 8, fontFamily: 'Fredoka_700Bold' },
   updated: { fontSize: 12, color: COLORS.sand, marginBottom: 24 },
   h2: { fontSize: 15, fontWeight: '800', color: COLORS.ink, marginTop: 20, marginBottom: 6 },
   body: { fontSize: 13, color: COLORS.body, lineHeight: 20 },

@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: COLORS.white,
     letterSpacing: 2,
+    fontFamily: 'Fredoka_700Bold',
   },
   subtitle: {
     fontSize: 14,

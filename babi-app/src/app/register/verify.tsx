@@ -116,7 +116,7 @@ export default function Verify() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: COLORS.cream, padding: 24, alignItems: 'center', paddingTop: 64 },
-  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
   subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 8, textAlign: 'center', maxWidth: 280 },
   codeInput: {
     backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 2, borderColor: COLORS.border,
