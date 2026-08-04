@@ -1,8 +1,9 @@
 import { Tabs } from 'expo-router';
 import { PawPrint, MessageCircle, Compass, BookOpen, Syringe, User, LucideIcon } from 'lucide-react-native';
+import { COLORS } from '../../../lib/theme';
 
 function TabIcon({ Icon, focused }: { Icon: LucideIcon; focused: boolean }) {
-  return <Icon size={22} color={focused ? '#FB923C' : '#9A6B4B'} strokeWidth={focused ? 2.4 : 2} />;
+  return <Icon size={22} color={focused ? COLORS.clay : COLORS.sand} strokeWidth={focused ? 2.4 : 2} />;
 }
 
 export default function TabsLayout() {
@@ -10,9 +11,9 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#FB923C',
-        tabBarInactiveTintColor: '#9A6B4B',
-        tabBarStyle: { backgroundColor: '#FFF7ED', borderTopColor: '#FED7AA' },
+        tabBarActiveTintColor: COLORS.clay,
+        tabBarInactiveTintColor: COLORS.sand,
+        tabBarStyle: { backgroundColor: COLORS.cream, borderTopColor: COLORS.border },
       }}
     >
       <Tabs.Screen

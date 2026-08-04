@@ -5,8 +5,7 @@ import * as Location from 'expo-location';
 import * as ImagePicker from 'expo-image-picker';
 import { Building2, Scissors, Dog, Stethoscope, PartyPopper, Plus, MapPin, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const TEAL = '#0891A6';
+import { COLORS } from '../../../lib/theme';
 
 const BUSINESS_TYPES: { key: string; label: string; Icon: LucideIcon }[] = [
   { key: 'otel', label: 'Köpek Oteli', Icon: Building2 },
@@ -159,7 +158,7 @@ export default function CreateBusiness() {
     return (
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.titleRow}>
-          <PartyPopper size={22} color="#FB923C" />
+          <PartyPopper size={22} color={COLORS.clay} />
           <Text style={styles.title}>Neredeyse Tamam!</Text>
         </View>
         <Text style={styles.subtitle}>
@@ -173,10 +172,10 @@ export default function CreateBusiness() {
           {photos.length < 8 ? (
             <TouchableOpacity style={styles.addPhotoBox} onPress={pickBusinessPhoto} disabled={photoUploading}>
               {photoUploading ? (
-                <ActivityIndicator color="#FB923C" />
+                <ActivityIndicator color={COLORS.clay} />
               ) : (
                 <>
-                  <Plus size={20} color="#FB923C" strokeWidth={3} />
+                  <Plus size={20} color={COLORS.clay} strokeWidth={3} />
                   <Text style={styles.addPhotoText}>Ekle</Text>
                 </>
               )}
@@ -194,7 +193,7 @@ export default function CreateBusiness() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleRow}>
-        <Building2 size={22} color="#431407" />
+        <Building2 size={22} color={COLORS.ink} />
         <Text style={styles.title}>İşletme Profili</Text>
       </View>
       <Text style={styles.subtitle}>Hizmetini köpek sahipleriyle buluştur</Text>
@@ -207,7 +206,7 @@ export default function CreateBusiness() {
             style={[styles.chip, styles.typeChip, businessType === t.key && styles.typeChipActive]}
             onPress={() => setBusinessType(t.key)}
           >
-            <t.Icon size={14} color={businessType === t.key ? 'white' : '#9A6B4B'} />
+            <t.Icon size={14} color={businessType === t.key ? COLORS.white : COLORS.sand} />
             <Text style={[styles.chipText, businessType === t.key && styles.chipTextActive]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
@@ -234,10 +233,10 @@ export default function CreateBusiness() {
       <Text style={styles.label}>KONUM</Text>
       <TouchableOpacity style={[styles.locationButton, styles.locationButtonRow]} onPress={useCurrentLocation} disabled={locationLoading}>
         {locationLoading ? (
-          <ActivityIndicator color="#FB923C" />
+          <ActivityIndicator color={COLORS.clay} />
         ) : (
           <>
-            <MapPin size={15} color="#FB923C" />
+            <MapPin size={15} color={COLORS.clay} />
             <Text style={styles.locationButtonText}>
               {locationCoords ? 'Konum Eklendi ✓ (Değiştir)' : 'Mevcut Konumu Kullan'}
             </Text>
@@ -255,43 +254,43 @@ export default function CreateBusiness() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64 },
+  container: { padding: 24, backgroundColor: COLORS.cream, flexGrow: 1, paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24, lineHeight: 20 },
-  label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 16 },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 4, marginBottom: 24, lineHeight: 20 },
+  label: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 6, marginTop: 16 },
   input: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: '#431407',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: COLORS.ink,
   },
   textArea: { minHeight: 80, textAlignVertical: 'top' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 14, paddingVertical: 10, borderRadius: 12, borderWidth: 1,
-    borderColor: '#FED7AA', backgroundColor: 'white',
+    borderColor: COLORS.border, backgroundColor: COLORS.white,
   },
-  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
+  chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  typeChipActive: { backgroundColor: TEAL, borderColor: TEAL },
-  chipText: { fontSize: 13, fontWeight: '700', color: '#9A6B4B' },
-  chipTextActive: { color: 'white' },
+  typeChipActive: { backgroundColor: COLORS.teal, borderColor: COLORS.teal },
+  chipText: { fontSize: 13, fontWeight: '700', color: COLORS.sand },
+  chipTextActive: { color: COLORS.white },
   locationButton: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
     paddingVertical: 14, alignItems: 'center',
   },
   locationButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
-  locationButtonText: { fontSize: 13, fontWeight: '700', color: '#FB923C' },
-  errorText: { color: '#DC2626', fontSize: 13, marginTop: 16 },
+  locationButtonText: { fontSize: 13, fontWeight: '700', color: COLORS.clay },
+  errorText: { color: COLORS.danger, fontSize: 13, marginTop: 16 },
   button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
   },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '800' },
   photoGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 8 },
   photoThumb: { width: 90, height: 90, borderRadius: 14 },
   addPhotoBox: {
-    width: 90, height: 90, borderRadius: 14, backgroundColor: '#FFEDD5',
-    borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed',
+    width: 90, height: 90, borderRadius: 14, backgroundColor: COLORS.peach,
+    borderWidth: 2, borderColor: COLORS.border, borderStyle: 'dashed',
     alignItems: 'center', justifyContent: 'center',
   },
-  addPhotoText: { color: '#FB923C', fontWeight: '800', fontSize: 12 },
+  addPhotoText: { color: COLORS.clay, fontWeight: '800', fontSize: 12 },
 });

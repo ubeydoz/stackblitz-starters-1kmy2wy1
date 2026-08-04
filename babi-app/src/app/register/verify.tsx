@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { supabase } from '../../../lib/supabase';
+import { COLORS } from '../../../lib/theme';
 
 export default function Verify() {
   const router = useRouter();
@@ -114,20 +115,20 @@ export default function Verify() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, alignItems: 'center', paddingTop: 64 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, textAlign: 'center', maxWidth: 280 },
+  container: { flex: 1, backgroundColor: COLORS.cream, padding: 24, alignItems: 'center', paddingTop: 64 },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 8, textAlign: 'center', maxWidth: 280 },
   codeInput: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 2, borderColor: '#FED7AA',
-    paddingHorizontal: 20, paddingVertical: 16, fontSize: 24, color: '#431407',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 2, borderColor: COLORS.border,
+    paddingHorizontal: 20, paddingVertical: 16, fontSize: 24, color: COLORS.ink,
     marginTop: 32, width: 200, textAlign: 'center', letterSpacing: 8,
   },
-  infoText: { color: '#16A34A', fontSize: 13, marginTop: 16 },
-  errorText: { color: '#DC2626', fontSize: 13, marginTop: 16, textAlign: 'center' },
+  infoText: { color: COLORS.success, fontSize: 13, marginTop: 16 },
+  errorText: { color: COLORS.danger, fontSize: 13, marginTop: 16, textAlign: 'center' },
   button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, paddingHorizontal: 48,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, paddingHorizontal: 48,
     alignItems: 'center', marginTop: 32,
   },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '800' },
-  resend: { color: '#FB923C', fontWeight: '700', marginTop: 16, fontSize: 13 },
+  buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '800' },
+  resend: { color: COLORS.clay, fontWeight: '700', marginTop: 16, fontSize: 13 },
 });

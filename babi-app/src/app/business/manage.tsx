@@ -3,15 +3,7 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Scr
 import { useRouter } from 'expo-router';
 import { Building2, Scissors, Dog, Stethoscope, ImageOff, Star, ChevronRight, Plus, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const MOSS = '#6B8F71';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
   otel: { label: 'Köpek Oteli', Icon: Building2 },
@@ -75,7 +67,7 @@ export default function ManageBusinesses() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FB923C" />
+        <ActivityIndicator size="large" color={COLORS.clay} />
       </View>
     );
   }
@@ -83,7 +75,7 @@ export default function ManageBusinesses() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleRow}>
-        <Building2 size={22} color="#431407" />
+        <Building2 size={22} color={COLORS.ink} />
         <Text style={styles.title}>İşletmelerim</Text>
       </View>
       <Text style={styles.subtitle}>Profillerini yönet, yorumlarını gör</Text>
@@ -103,7 +95,7 @@ export default function ManageBusinesses() {
               <Image source={{ uri: b.photoUrl }} style={styles.cardPhoto} />
             ) : (
               <View style={[styles.cardPhoto, styles.cardPhotoEmpty]}>
-                <ImageOff size={22} color="#FB923C" />
+                <ImageOff size={22} color={COLORS.clay} />
               </View>
             )}
             <View style={styles.cardInfo}>
@@ -111,7 +103,7 @@ export default function ManageBusinesses() {
               <View style={styles.cardTypeRow}>
                 {TYPE_LABELS[b.business_type] ? (
                   <>
-                    {(() => { const TypeIcon = TYPE_LABELS[b.business_type].Icon; return <TypeIcon size={11} color="#9A6B4B" />; })()}
+                    {(() => { const TypeIcon = TYPE_LABELS[b.business_type].Icon; return <TypeIcon size={11} color={COLORS.sand} />; })()}
                     <Text style={styles.cardType}>{TYPE_LABELS[b.business_type].label}</Text>
                   </>
                 ) : (
@@ -120,20 +112,20 @@ export default function ManageBusinesses() {
               </View>
               {b.reviewCount > 0 ? (
                 <View style={styles.cardRatingRow}>
-                  <Star size={11} color={MOSS} fill={MOSS} />
+                  <Star size={11} color={COLORS.moss} fill={COLORS.moss} />
                   <Text style={styles.cardRatingMoss}>{b.avgRating.toFixed(1)} ({b.reviewCount} değerlendirme)</Text>
                 </View>
               ) : (
                 <Text style={styles.cardRating}>Henüz değerlendirme yok</Text>
               )}
             </View>
-            <ChevronRight size={22} color="#FED7AA" />
+            <ChevronRight size={22} color={COLORS.border} />
           </TouchableOpacity>
         ))
       )}
 
       <TouchableOpacity style={[styles.addButton, styles.addButtonRow]} onPress={() => router.push('/business/create')}>
-        <Plus size={16} color="white" strokeWidth={3} />
+        <Plus size={16} color={COLORS.white} strokeWidth={3} />
         <Text style={styles.addButtonText}>Yeni İşletme Ekle</Text>
       </TouchableOpacity>
     </ScrollView>
@@ -141,29 +133,29 @@ export default function ManageBusinesses() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 64, backgroundColor: '#FFF7ED', flexGrow: 1 },
-  centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
+  container: { padding: 20, paddingTop: 64, backgroundColor: COLORS.cream, flexGrow: 1 },
+  centerContainer: { flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', justifyContent: 'center' },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 20 },
-  emptyState: { backgroundColor: 'white', borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16 },
-  emptyText: { fontSize: 14, color: '#9A6B4B' },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 4, marginBottom: 20 },
+  emptyState: { backgroundColor: COLORS.white, borderRadius: 16, padding: 24, alignItems: 'center', marginBottom: 16, ...SHADOW },
+  emptyText: { fontSize: 14, color: COLORS.sand },
   card: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: 'white',
-    borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW,
+    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white,
+    borderRadius: 16, padding: 12, marginBottom: 10, ...SHADOW,
   },
   cardPhoto: { width: 60, height: 60, borderRadius: 12 },
-  cardPhotoEmpty: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
+  cardPhotoEmpty: { backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, marginLeft: 12 },
-  cardName: { fontSize: 15, fontWeight: '800', color: '#431407' },
+  cardName: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
   cardTypeRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 2 },
-  cardType: { fontSize: 12, color: '#9A6B4B' },
+  cardType: { fontSize: 12, color: COLORS.sand },
   cardRatingRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 4 },
-  cardRating: { fontSize: 12, color: '#9A6B4B', fontWeight: '700', marginTop: 4 },
-  cardRatingMoss: { fontSize: 12, color: MOSS, fontWeight: '700' },
+  cardRating: { fontSize: 12, color: COLORS.sand, fontWeight: '700', marginTop: 4 },
+  cardRatingMoss: { fontSize: 12, color: COLORS.moss, fontWeight: '700' },
   addButton: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 8,
   },
   addButtonRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
-  addButtonText: { color: 'white', fontWeight: '800', fontSize: 14 },
+  addButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 14 },
 });

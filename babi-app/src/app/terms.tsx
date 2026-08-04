@@ -1,5 +1,6 @@
 import { ScrollView, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
+import { COLORS } from '../../lib/theme';
 
 export default function Terms() {
   const router = useRouter();
@@ -56,11 +57,11 @@ export default function Terms() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, paddingTop: 64, backgroundColor: '#FFF7ED' },
-  backLink: { color: '#FB923C', fontWeight: '700', fontSize: 14, marginBottom: 20 },
-  title: { fontSize: 22, fontWeight: '900', color: '#431407', marginBottom: 8 },
-  updated: { fontSize: 12, color: '#9A6B4B', marginBottom: 24 },
-  h2: { fontSize: 15, fontWeight: '800', color: '#431407', marginTop: 20, marginBottom: 6 },
-  body: { fontSize: 13, color: '#5C4033', lineHeight: 20 },
-  footer: { fontSize: 11, color: '#9A6B4B', fontStyle: 'italic', marginTop: 32, marginBottom: 40 },
+  container: { padding: 24, paddingTop: 64, backgroundColor: COLORS.cream },
+  backLink: { color: COLORS.clay, fontWeight: '700', fontSize: 14, marginBottom: 20 },
+  title: { fontSize: 22, fontWeight: '900', color: COLORS.ink, marginBottom: 8 },
+  updated: { fontSize: 12, color: COLORS.sand, marginBottom: 24 },
+  h2: { fontSize: 15, fontWeight: '800', color: COLORS.ink, marginTop: 20, marginBottom: 6 },
+  body: { fontSize: 13, color: COLORS.body, lineHeight: 20 },
+  footer: { fontSize: 11, color: COLORS.sand, fontStyle: 'italic', marginTop: 32, marginBottom: 40 },
 });

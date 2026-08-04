@@ -5,14 +5,7 @@ import * as Location from 'expo-location';
 import { ImageOff, X, Heart, MapPin, Info, RotateCcw } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
 import PawMeetAnimation from '../../components/PawMeetAnimation';
-
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 type DogPhoto = { id: string; url: string; position?: number };
 
@@ -422,7 +415,7 @@ export default function Home() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FB923C" />
+        <ActivityIndicator size="large" color={COLORS.clay} />
       </View>
     );
   }
@@ -454,14 +447,14 @@ export default function Home() {
   if (matchInfo) {
     return (
       <View style={styles.centerContainer}>
-        <PawMeetAnimation size={70} color="#FB923C" />
+        <PawMeetAnimation size={70} color={COLORS.clay} />
         <Text style={styles.matchTitle}>Eşleştiniz!</Text>
         <Text style={styles.matchSubtitle}>{matchInfo.name} ile artık mesajlaşabilirsiniz</Text>
         <TouchableOpacity style={styles.button} onPress={() => router.push('/matches')}>
           <Text style={styles.buttonText}>Mesajlaş</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={closeMatch} style={{ marginTop: 12 }}>
-          <Text style={{ color: '#9A6B4B', fontWeight: '700' }}>Devam Et</Text>
+          <Text style={{ color: COLORS.sand, fontWeight: '700' }}>Devam Et</Text>
         </TouchableOpacity>
       </View>
     );
@@ -476,7 +469,7 @@ export default function Home() {
           <Text style={styles.buttonText}>Yenile</Text>
         </TouchableOpacity>
         <TouchableOpacity onPress={() => setFilterVisible(true)} style={{ marginTop: 12 }}>
-          <Text style={{ color: '#FB923C', fontWeight: '700' }}>Filtrele</Text>
+          <Text style={{ color: COLORS.clay, fontWeight: '700' }}>Filtrele</Text>
         </TouchableOpacity>
       </View>
     );
@@ -527,7 +520,7 @@ export default function Home() {
               <Image source={{ uri: next2.photos[0].url }} style={styles.stackCardImage} />
             ) : (
               <View style={[styles.stackCardImage, styles.noPhoto]}>
-                <ImageOff size={28} color="#FB923C" />
+                <ImageOff size={28} color={COLORS.clay} />
               </View>
             )}
           </View>
@@ -539,7 +532,7 @@ export default function Home() {
               <Image source={{ uri: next1.photos[0].url }} style={styles.stackCardImage} />
             ) : (
               <View style={[styles.stackCardImage, styles.noPhoto]}>
-                <ImageOff size={28} color="#FB923C" />
+                <ImageOff size={28} color={COLORS.clay} />
               </View>
             )}
           </View>
@@ -557,7 +550,7 @@ export default function Home() {
               <Image source={{ uri: photoUrl }} style={styles.cardImage} />
             ) : (
               <View style={[styles.cardImage, styles.noPhoto]}>
-                <ImageOff size={32} color="#FB923C" />
+                <ImageOff size={32} color={COLORS.clay} />
               </View>
             )}
 
@@ -583,7 +576,7 @@ export default function Home() {
             </Animated.View>
 
             <TouchableOpacity style={styles.infoButton} onPress={() => setInfoVisible(true)}>
-              <Info size={18} color="white" />
+              <Info size={18} color={COLORS.white} />
             </TouchableOpacity>
 
             <View style={styles.cardInfo}>
@@ -592,7 +585,7 @@ export default function Home() {
                 <Text style={styles.cardBreed}>{current.breed}</Text>
                 {showDistanceBadge ? (
                   <View style={styles.distanceBadge}>
-                    <MapPin size={11} color="white" />
+                    <MapPin size={11} color={COLORS.white} />
                     <Text style={styles.distanceBadgeText}>{current.distance_km!.toFixed(1)} km</Text>
                   </View>
                 ) : null}
@@ -608,13 +601,13 @@ export default function Home() {
           onPress={handleRewind}
           disabled={!lastSwipe}
         >
-          <RotateCcw size={20} color={lastSwipe ? '#FB923C' : '#D8CDBF'} />
+          <RotateCcw size={20} color={lastSwipe ? COLORS.clay : '#D8CDBF'} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, styles.dislikeButton]} onPress={() => animateSwipeOut('dislike')}>
-          <X size={28} color="#EF4444" strokeWidth={2.5} />
+          <X size={28} color={COLORS.danger} strokeWidth={2.5} />
         </TouchableOpacity>
         <TouchableOpacity style={[styles.actionButton, styles.likeButton]} onPress={() => animateSwipeOut('like')}>
-          <Heart size={26} color="white" fill="white" />
+          <Heart size={26} color={COLORS.white} fill={COLORS.white} />
         </TouchableOpacity>
       </View>
 
@@ -624,7 +617,7 @@ export default function Home() {
             <View style={styles.infoModalHeader}>
               <Text style={styles.modalTitle}>{current.name}</Text>
               <TouchableOpacity onPress={() => setInfoVisible(false)}>
-                <X size={20} color="#9A6B4B" />
+                <X size={20} color={COLORS.sand} />
               </TouchableOpacity>
             </View>
             <ScrollView showsVerticalScrollIndicator={false}>
@@ -638,7 +631,7 @@ export default function Home() {
               <Text style={styles.infoBreed}>{current.breed} · {current.gender === 'female' ? 'Dişi' : 'Erkek'}</Text>
               {showDistanceBadge ? (
                 <View style={styles.iconRow}>
-                  <MapPin size={13} color="#9A6B4B" />
+                  <MapPin size={13} color={COLORS.sand} />
                   <Text style={styles.infoMeta}>{current.distance_km!.toFixed(1)} km uzaklıkta</Text>
                 </View>
               ) : null}
@@ -671,88 +664,88 @@ export default function Home() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', paddingTop: 64, padding: 20 },
-  centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center', padding: 24 },
+  container: { flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', paddingTop: 64, padding: 20 },
+  centerContainer: { flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', justifyContent: 'center', padding: 24 },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', maxWidth: 360, marginBottom: 16 },
-  headerTitle: { fontSize: 18, fontWeight: '900', color: '#431407', fontFamily: 'Fredoka_700Bold' },
-  headerLink: { fontSize: 14, fontWeight: '700', color: '#FB923C' },
+  headerTitle: { fontSize: 18, fontWeight: '900', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
+  headerLink: { fontSize: 14, fontWeight: '700', color: COLORS.clay },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
 
   cardStackWrap: { width: '100%', maxWidth: 360, aspectRatio: 0.75, position: 'relative' },
-  card: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 24, backgroundColor: 'white', ...CARD_SHADOW },
+  card: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, borderRadius: 24, backgroundColor: COLORS.white, ...SHADOW },
   cardClip: { flex: 1, borderRadius: 24, overflow: 'hidden' },
   stackCardBack1: { transform: [{ scale: 0.95 }, { translateY: 10 }] },
   stackCardBack2: { transform: [{ scale: 0.9 }, { translateY: 20 }] },
   stackCardImage: { width: '100%', height: '100%', borderRadius: 24 },
   cardImage: { width: '100%', height: '80%' },
-  noPhoto: { alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFEDD5' },
+  noPhoto: { alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.peach },
   cardInfo: { padding: 16 },
-  cardName: { fontSize: 20, fontWeight: '800', color: '#431407' },
+  cardName: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
   cardMetaRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 },
-  cardBreed: { fontSize: 14, color: '#9A6B4B' },
+  cardBreed: { fontSize: 14, color: COLORS.sand },
   distanceBadge: {
     flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: 'rgba(67,20,7,0.65)',
     borderRadius: 10, paddingHorizontal: 8, paddingVertical: 4,
   },
-  distanceBadgeText: { color: 'white', fontSize: 11, fontWeight: '800' },
+  distanceBadgeText: { color: COLORS.white, fontSize: 11, fontWeight: '800' },
   infoButton: {
     position: 'absolute', bottom: '20%', right: 12, marginBottom: 8, width: 32, height: 32, borderRadius: 16,
     backgroundColor: 'rgba(0,0,0,0.45)', alignItems: 'center', justifyContent: 'center',
   },
-  likeLabel: { position: 'absolute', top: 40, left: 20, borderWidth: 4, borderColor: '#22C55E', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '-20deg' }] },
-  likeLabelText: { color: '#22C55E', fontSize: 28, fontWeight: '900' },
-  nopeLabel: { position: 'absolute', top: 40, right: 20, borderWidth: 4, borderColor: '#EF4444', borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '20deg' }] },
-  nopeLabelText: { color: '#EF4444', fontSize: 28, fontWeight: '900' },
+  likeLabel: { position: 'absolute', top: 40, left: 20, borderWidth: 4, borderColor: COLORS.success, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '-20deg' }] },
+  likeLabelText: { color: COLORS.success, fontSize: 28, fontWeight: '900' },
+  nopeLabel: { position: 'absolute', top: 40, right: 20, borderWidth: 4, borderColor: COLORS.danger, borderRadius: 8, paddingHorizontal: 12, paddingVertical: 4, transform: [{ rotate: '20deg' }] },
+  nopeLabelText: { color: COLORS.danger, fontSize: 28, fontWeight: '900' },
   actions: { flexDirection: 'row', gap: 20, marginTop: 32, alignItems: 'center' },
   actionButton: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
-  dislikeButton: { backgroundColor: 'white', borderWidth: 2, borderColor: '#FCA5A5' },
-  likeButton: { backgroundColor: '#FB923C' },
+  dislikeButton: { backgroundColor: COLORS.white, borderWidth: 2, borderColor: '#FCA5A5' },
+  likeButton: { backgroundColor: COLORS.clay },
   rewindButton: {
     width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center',
-    backgroundColor: 'white', borderWidth: 2, borderColor: '#FED7AA',
+    backgroundColor: COLORS.white, borderWidth: 2, borderColor: COLORS.border,
   },
   rewindButtonDisabled: { opacity: 0.5 },
-  errorText: { fontSize: 14, color: '#DC2626', textAlign: 'center' },
-  emptyText: { fontSize: 16, color: '#431407', textAlign: 'center', marginBottom: 16 },
-  matchTitle: { fontSize: 28, fontWeight: '900', color: '#431407', marginTop: 12, fontFamily: 'Fredoka_700Bold' },
-  matchSubtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, textAlign: 'center' },
-  button: { backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24 },
-  buttonText: { color: 'white', fontSize: 14, fontWeight: '800' },
+  errorText: { fontSize: 14, color: COLORS.danger, textAlign: 'center' },
+  emptyText: { fontSize: 16, color: COLORS.ink, textAlign: 'center', marginBottom: 16 },
+  matchTitle: { fontSize: 28, fontWeight: '900', color: COLORS.ink, marginTop: 12, fontFamily: 'Fredoka_700Bold' },
+  matchSubtitle: { fontSize: 14, color: COLORS.sand, marginTop: 8, textAlign: 'center' },
+  button: { backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 14, paddingHorizontal: 32, marginTop: 24, alignSelf: 'center' },
+  buttonText: { color: COLORS.white, fontSize: 14, fontWeight: '800' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#431407' },
-  filterLabel: { fontSize: 11, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginTop: 16, marginBottom: 8 },
+  modalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '80%' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: COLORS.ink },
+  filterLabel: { fontSize: 11, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginTop: 16, marginBottom: 8 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
-  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
-  chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
-  chipTextActive: { color: 'white' },
+  chip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
+  chipText: { fontSize: 12, fontWeight: '700', color: COLORS.sand },
+  chipTextActive: { color: COLORS.white },
   ageRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  ageChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
+  ageChip: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
   modalActions: { flexDirection: 'row', gap: 12, marginTop: 20 },
-  clearButton: { flex: 1, borderWidth: 2, borderColor: '#FED7AA', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
-  clearButtonText: { color: '#9A6B4B', fontWeight: '800' },
-  applyButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
-  applyButtonText: { color: 'white', fontWeight: '800' },
+  clearButton: { flex: 1, borderWidth: 2, borderColor: COLORS.border, borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
+  clearButtonText: { color: COLORS.sand, fontWeight: '800' },
+  applyButton: { flex: 1, backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 14, alignItems: 'center' },
+  applyButtonText: { color: COLORS.white, fontWeight: '800' },
 
   progressRow: { position: 'absolute', top: 10, left: 10, right: 10, flexDirection: 'row', gap: 4 },
   progressTrack: { flex: 1, height: 3, borderRadius: 2, backgroundColor: 'rgba(255,255,255,0.4)', overflow: 'hidden' },
   progressFill: { flex: 1, backgroundColor: 'transparent' },
-  progressFillActive: { backgroundColor: 'white' },
+  progressFillActive: { backgroundColor: COLORS.white },
   tapZoneLeft: { position: 'absolute', top: 0, bottom: '20%', left: 0, width: '50%' },
   tapZoneRight: { position: 'absolute', top: 0, bottom: '20%', right: 0, width: '50%' },
 
-  infoModalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36, maxHeight: '85%' },
+  infoModalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36, maxHeight: '85%' },
   infoModalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   infoPhotoScroll: { height: 260, borderRadius: 18, marginBottom: 16 },
   infoPhoto: { width: SCREEN_WIDTH - 40, height: 260, borderRadius: 18 },
-  infoName: { fontSize: 20, fontWeight: '900', color: '#431407', marginTop: 4 },
-  infoBreed: { fontSize: 14, color: '#9A6B4B', marginTop: 2, marginBottom: 6 },
-  infoMeta: { fontSize: 13, color: '#9A6B4B' },
+  infoName: { fontSize: 20, fontWeight: '900', color: COLORS.ink, marginTop: 4 },
+  infoBreed: { fontSize: 14, color: COLORS.sand, marginTop: 2, marginBottom: 6 },
+  infoMeta: { fontSize: 13, color: COLORS.sand },
   infoSection: { marginTop: 16 },
-  infoSectionLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6 },
-  infoAbout: { fontSize: 14, color: '#5C4033', lineHeight: 20 },
+  infoSectionLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 6 },
+  infoAbout: { fontSize: 14, color: COLORS.body, lineHeight: 20 },
   purposeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  purposeTag: { backgroundColor: '#FFEDD5', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
-  purposeTagText: { fontSize: 12, fontWeight: '700', color: '#FB923C' },
+  purposeTag: { backgroundColor: COLORS.peach, borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6 },
+  purposeTagText: { fontSize: 12, fontWeight: '700', color: COLORS.clay },
 });

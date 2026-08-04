@@ -1,14 +1,7 @@
 import { View, Text, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Dog, Building2 } from 'lucide-react-native';
-
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 export default function AccountType() {
   const router = useRouter();
@@ -23,7 +16,7 @@ export default function AccountType() {
       <Text style={styles.subtitle}>Bu seçim, kayıt akışını sana göre şekillendirecek</Text>
 
       <TouchableOpacity style={styles.card} onPress={() => selectType('owner')}>
-        <Dog size={40} color="#FB923C" style={styles.cardIcon} />
+        <Dog size={40} color={COLORS.clay} style={styles.cardIcon} />
         <Text style={styles.cardTitle}>Köpek Sahibiyim</Text>
         <Text style={styles.cardDesc}>
           Köpeğim için eşleşme, sosyalleşme ve bakım bilgisi arıyorum.
@@ -31,7 +24,7 @@ export default function AccountType() {
       </TouchableOpacity>
 
       <TouchableOpacity style={styles.card} onPress={() => selectType('business')}>
-        <Building2 size={40} color="#FB923C" style={styles.cardIcon} />
+        <Building2 size={40} color={COLORS.clay} style={styles.cardIcon} />
         <Text style={styles.cardTitle}>İşletme Sahibiyim</Text>
         <Text style={styles.cardDesc}>
           Köpek oteli, tımar/bakım ya da gezdirme hizmeti sunuyorum.
@@ -42,14 +35,14 @@ export default function AccountType() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64, alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', textAlign: 'center', fontFamily: 'Fredoka_700Bold' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 8, marginBottom: 32, textAlign: 'center', maxWidth: 280 },
+  container: { padding: 24, backgroundColor: COLORS.cream, flexGrow: 1, paddingTop: 64, alignItems: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, textAlign: 'center', fontFamily: 'Fredoka_700Bold' },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 8, marginBottom: 32, textAlign: 'center', maxWidth: 280 },
   card: {
-    backgroundColor: 'white', borderRadius: 20, padding: 24, width: '100%', maxWidth: 340,
-    marginBottom: 16, borderWidth: 2, borderColor: '#FED7AA', alignItems: 'center', ...CARD_SHADOW,
+    backgroundColor: COLORS.white, borderRadius: 20, padding: 24, width: '100%', maxWidth: 340,
+    marginBottom: 16, borderWidth: 2, borderColor: COLORS.border, alignItems: 'center', ...SHADOW,
   },
   cardIcon: { marginBottom: 12 },
-  cardTitle: { fontSize: 18, fontWeight: '800', color: '#431407' },
-  cardDesc: { fontSize: 13, color: '#9A6B4B', marginTop: 8, textAlign: 'center', lineHeight: 19 },
+  cardTitle: { fontSize: 18, fontWeight: '800', color: COLORS.ink },
+  cardDesc: { fontSize: 13, color: COLORS.sand, marginTop: 8, textAlign: 'center', lineHeight: 19 },
 });

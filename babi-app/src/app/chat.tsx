@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, FlatList, Alert } 
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { MoreVertical } from 'lucide-react-native';
 import { supabase } from '../../lib/supabase';
+import { COLORS } from '../../lib/theme';
 
 type Message = {
   id: string;
@@ -167,7 +168,7 @@ export default function Chat() {
       <View style={styles.headerRow}>
         <Text style={styles.header}>{dogName}</Text>
         <TouchableOpacity style={styles.menuButton} onPress={showOptions}>
-          <MoreVertical size={22} color="#9A6B4B" />
+          <MoreVertical size={22} color={COLORS.sand} />
         </TouchableOpacity>
       </View>
 
@@ -202,18 +203,18 @@ export default function Chat() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 64 },
+  container: { flex: 1, backgroundColor: COLORS.cream, paddingTop: 64 },
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, marginBottom: 12 },
-  header: { fontSize: 20, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
+  header: { fontSize: 20, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
   menuButton: { paddingHorizontal: 10, paddingVertical: 4 },
   messageList: { padding: 16, gap: 8 },
   bubble: { maxWidth: '75%', padding: 12, borderRadius: 16, marginBottom: 8 },
-  myBubble: { backgroundColor: '#FB923C', alignSelf: 'flex-end' },
-  theirBubble: { backgroundColor: 'white', alignSelf: 'flex-start' },
-  myText: { color: 'white' },
-  theirText: { color: '#431407' },
-  inputRow: { flexDirection: 'row', padding: 16, gap: 10, borderTopWidth: 1, borderTopColor: '#FED7AA' },
-  input: { flex: 1, backgroundColor: 'white', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 },
-  sendButton: { backgroundColor: '#FB923C', borderRadius: 16, paddingHorizontal: 20, justifyContent: 'center' },
-  sendButtonText: { color: 'white', fontWeight: '800' },
+  myBubble: { backgroundColor: COLORS.clay, alignSelf: 'flex-end' },
+  theirBubble: { backgroundColor: COLORS.white, alignSelf: 'flex-start' },
+  myText: { color: COLORS.white },
+  theirText: { color: COLORS.ink },
+  inputRow: { flexDirection: 'row', padding: 16, gap: 10, borderTopWidth: 1, borderTopColor: COLORS.border },
+  input: { flex: 1, backgroundColor: COLORS.white, borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 },
+  sendButton: { backgroundColor: COLORS.clay, borderRadius: 16, paddingHorizontal: 20, justifyContent: 'center' },
+  sendButtonText: { color: COLORS.white, fontWeight: '800' },
 });

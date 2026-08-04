@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
+import { COLORS } from '../../lib/theme';
 
 export default function Login() {
   const router = useRouter();
@@ -92,16 +93,16 @@ export default function Login() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 24, paddingTop: 40, justifyContent: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginBottom: 24, fontFamily: 'Fredoka_700Bold' },
-  label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6 },
+  container: { flex: 1, backgroundColor: COLORS.cream, padding: 24, paddingTop: 40, justifyContent: 'center' },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, marginBottom: 24, fontFamily: 'Fredoka_700Bold' },
+  label: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 6 },
   input: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: '#431407',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: COLORS.ink,
   },
-  errorText: { color: '#DC2626', fontSize: 13, marginTop: 12 },
+  errorText: { color: COLORS.danger, fontSize: 13, marginTop: 12 },
   button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 20,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 20,
   },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '800' },
 });

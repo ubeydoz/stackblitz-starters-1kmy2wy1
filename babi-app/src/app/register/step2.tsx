@@ -3,6 +3,7 @@ import { View, Text, TextInput, TouchableOpacity, StyleSheet, ScrollView, Modal 
 import { useRouter } from 'expo-router';
 import { X } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
+import { COLORS } from '../../../lib/theme';
 
 const BREEDS = [
   'Afgan Tazısı', 'Airedale Terrier', 'Akbaş (Karabaş)', 'Akita', 'Alaskan Malamute',
@@ -196,7 +197,7 @@ export default function Step2() {
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Irk Seç</Text>
               <TouchableOpacity onPress={() => setBreedModalVisible(false)}>
-                <X size={20} color="#9A6B4B" />
+                <X size={20} color={COLORS.sand} />
               </TouchableOpacity>
             </View>
 
@@ -226,51 +227,51 @@ export default function Step2() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, backgroundColor: '#FFF7ED', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16, fontFamily: 'Fredoka_700Bold' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4, marginBottom: 24 },
-  label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 16 },
+  container: { padding: 24, backgroundColor: COLORS.cream, flexGrow: 1 },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, marginTop: 16, fontFamily: 'Fredoka_700Bold' },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 4, marginBottom: 24 },
+  label: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 6, marginTop: 16 },
   input: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: '#431407',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 16, paddingVertical: 14, fontSize: 14, color: COLORS.ink,
   },
   breedSelector: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
     paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row',
     justifyContent: 'space-between', alignItems: 'center',
   },
-  breedSelectorText: { fontSize: 14, color: '#431407', fontWeight: '600' },
-  breedSelectorPlaceholder: { fontSize: 14, color: '#B9977C' },
-  breedSelectorChevron: { fontSize: 14, color: '#9A6B4B' },
+  breedSelectorText: { fontSize: 14, color: COLORS.ink, fontWeight: '600' },
+  breedSelectorPlaceholder: { fontSize: 14, color: COLORS.placeholder },
+  breedSelectorChevron: { fontSize: 14, color: COLORS.sand },
   row: { flexDirection: 'row' },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   chip: {
     paddingHorizontal: 14, paddingVertical: 8, borderRadius: 12, borderWidth: 1,
-    borderColor: '#FED7AA', backgroundColor: 'white',
+    borderColor: COLORS.border, backgroundColor: COLORS.white,
   },
-  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
-  chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
-  chipTextActive: { color: 'white' },
+  chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
+  chipText: { fontSize: 12, fontWeight: '700', color: COLORS.sand },
+  chipTextActive: { color: COLORS.white },
   genderBtn: {
-    flex: 1, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
-    backgroundColor: 'white', alignItems: 'center', marginRight: 8,
+    flex: 1, paddingVertical: 14, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    backgroundColor: COLORS.white, alignItems: 'center', marginRight: 8,
   },
-  errorText: { color: '#DC2626', fontSize: 13, marginTop: 16 },
+  errorText: { color: COLORS.danger, fontSize: 13, marginTop: 16 },
   button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
   },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '800' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36, maxHeight: '85%' },
+  modalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 20, paddingBottom: 36, maxHeight: '85%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-  modalTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
   searchInput: {
-    backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#431407', marginBottom: 12,
+    backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: COLORS.ink, marginBottom: 12,
   },
   breedList: { maxHeight: 400 },
-  breedRow: { paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: '#FED7AA' },
-  breedRowText: { fontSize: 14, color: '#431407' },
-  breedRowTextActive: { color: '#FB923C', fontWeight: '800' },
-  noResultText: { textAlign: 'center', color: '#9A6B4B', fontSize: 13, paddingVertical: 20 },
+  breedRow: { paddingVertical: 12, paddingHorizontal: 8, borderBottomWidth: 1, borderBottomColor: COLORS.border },
+  breedRowText: { fontSize: 14, color: COLORS.ink },
+  breedRowTextActive: { color: COLORS.clay, fontWeight: '800' },
+  noResultText: { textAlign: 'center', color: COLORS.sand, fontSize: 13, paddingVertical: 20 },
 });

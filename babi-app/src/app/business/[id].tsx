@@ -4,15 +4,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Building2, Scissors, Dog, Stethoscope, Trash2, Plus, ImageOff, Star, Phone, MapPin, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const MOSS = '#6B8F71';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 const TYPE_LABELS: Record<string, { label: string; Icon: LucideIcon }> = {
   otel: { label: 'Köpek Oteli', Icon: Building2 },
@@ -232,7 +224,7 @@ export default function BusinessDetail() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FB923C" />
+        <ActivityIndicator size="large" color={COLORS.clay} />
       </View>
     );
   }
@@ -251,7 +243,7 @@ export default function BusinessDetail() {
             <Image source={{ uri: p.url }} style={styles.photo} />
             {isOwner ? (
               <TouchableOpacity style={styles.photoDeleteButton} onPress={() => confirmDeletePhoto(p.id)}>
-                <Trash2 size={15} color="white" />
+                <Trash2 size={15} color={COLORS.white} />
               </TouchableOpacity>
             ) : null}
           </View>
@@ -259,10 +251,10 @@ export default function BusinessDetail() {
         {isOwner && photos.length < 8 ? (
           <TouchableOpacity style={[styles.photoWrap, styles.addPhotoWrap]} onPress={pickPhoto} disabled={photoUploading}>
             {photoUploading ? (
-              <ActivityIndicator color="#FB923C" />
+              <ActivityIndicator color={COLORS.clay} />
             ) : (
               <View style={styles.addPhotoRow}>
-                <Plus size={18} color="#FB923C" strokeWidth={3} />
+                <Plus size={18} color={COLORS.clay} strokeWidth={3} />
                 <Text style={styles.addPhotoText}>Fotoğraf Ekle</Text>
               </View>
             )}
@@ -270,7 +262,7 @@ export default function BusinessDetail() {
         ) : null}
         {photos.length === 0 && !isOwner ? (
           <View style={[styles.photoWrap, styles.addPhotoWrap]}>
-            <ImageOff size={32} color="#FB923C" />
+            <ImageOff size={32} color={COLORS.clay} />
           </View>
         ) : null}
       </ScrollView>
@@ -280,7 +272,7 @@ export default function BusinessDetail() {
           <View style={styles.typeLabelRow}>
             {TYPE_LABELS[businessType] ? (
               <>
-                {(() => { const TypeIcon = TYPE_LABELS[businessType].Icon; return <TypeIcon size={13} color="#FB923C" />; })()}
+                {(() => { const TypeIcon = TYPE_LABELS[businessType].Icon; return <TypeIcon size={13} color={COLORS.clay} />; })()}
                 <Text style={styles.typeLabel}>{TYPE_LABELS[businessType].label}</Text>
               </>
             ) : (
@@ -290,7 +282,7 @@ export default function BusinessDetail() {
           <Text style={styles.name}>{businessName}</Text>
           {reviews.length > 0 ? (
             <View style={styles.ratingSummaryRow}>
-              <Star size={13} color={MOSS} fill={MOSS} />
+              <Star size={13} color={COLORS.moss} fill={COLORS.moss} />
               <Text style={styles.ratingSummaryMoss}>{avgRating.toFixed(1)} ({reviews.length} değerlendirme)</Text>
             </View>
           ) : (
@@ -299,13 +291,13 @@ export default function BusinessDetail() {
           {description ? <Text style={styles.description}>{description}</Text> : null}
           {phone ? (
             <View style={styles.detailLineRow}>
-              <Phone size={13} color="#5C4033" />
+              <Phone size={13} color={COLORS.body} />
               <Text style={styles.detailLine}>{phone}</Text>
             </View>
           ) : null}
           {address ? (
             <View style={styles.detailLineRow}>
-              <MapPin size={13} color="#5C4033" />
+              <MapPin size={13} color={COLORS.body} />
               <Text style={styles.detailLine}>{address}</Text>
             </View>
           ) : null}
@@ -347,7 +339,7 @@ export default function BusinessDetail() {
           <View style={styles.starRow}>
             {[1, 2, 3, 4, 5].map(n => (
               <TouchableOpacity key={n} onPress={() => setMyRating(n)}>
-                <Star size={28} color={n <= myRating ? MOSS : '#FED7AA'} fill={n <= myRating ? MOSS : 'transparent'} />
+                <Star size={28} color={n <= myRating ? COLORS.moss : COLORS.border} fill={n <= myRating ? COLORS.moss : 'transparent'} />
               </TouchableOpacity>
             ))}
           </View>
@@ -375,7 +367,7 @@ export default function BusinessDetail() {
                 <Text style={styles.reviewerName}>{r.reviewerName}</Text>
                 <View style={styles.reviewStarsRow}>
                   {[1, 2, 3, 4, 5].map(n => (
-                    <Star key={n} size={12} color={MOSS} fill={n <= r.rating ? MOSS : 'transparent'} />
+                    <Star key={n} size={12} color={COLORS.moss} fill={n <= r.rating ? COLORS.moss : 'transparent'} />
                   ))}
                 </View>
               </View>
@@ -389,57 +381,57 @@ export default function BusinessDetail() {
 }
 
 const styles = StyleSheet.create({
-  container: { backgroundColor: '#FFF7ED', flexGrow: 1, paddingTop: 64, paddingBottom: 40 },
-  centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
+  container: { backgroundColor: COLORS.cream, flexGrow: 1, paddingTop: 64, paddingBottom: 40 },
+  centerContainer: { flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', justifyContent: 'center' },
   backButton: { paddingHorizontal: 20, marginBottom: 8 },
-  backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },
+  backButtonText: { color: COLORS.clay, fontWeight: '700', fontSize: 14 },
   photoScroll: { height: 220 },
   photoWrap: { width: 320, height: 220, marginHorizontal: 10, borderRadius: 20, overflow: 'hidden', position: 'relative' },
   photo: { width: '100%', height: '100%' },
   addPhotoWrap: {
-    backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed',
+    backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: COLORS.border, borderStyle: 'dashed',
   },
   addPhotoRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  addPhotoText: { color: '#FB923C', fontWeight: '800' },
+  addPhotoText: { color: COLORS.clay, fontWeight: '800' },
   photoDeleteButton: {
     position: 'absolute', top: 10, right: 10, width: 34, height: 34, borderRadius: 17,
     backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
   },
   infoBlock: { paddingHorizontal: 20, marginTop: 16 },
   typeLabelRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
-  typeLabel: { fontSize: 12, fontWeight: '800', color: '#FB923C' },
-  name: { fontSize: 22, fontWeight: '900', color: '#431407', marginTop: 4, fontFamily: 'Fredoka_700Bold' },
+  typeLabel: { fontSize: 12, fontWeight: '800', color: COLORS.clay },
+  name: { fontSize: 22, fontWeight: '900', color: COLORS.ink, marginTop: 4, fontFamily: 'Fredoka_700Bold' },
   ratingSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 5, marginTop: 6 },
-  ratingSummary: { fontSize: 13, color: '#9A6B4B', marginTop: 6, fontWeight: '700' },
-  ratingSummaryMoss: { fontSize: 13, color: MOSS, fontWeight: '700' },
-  description: { fontSize: 14, color: '#5C4033', marginTop: 12, lineHeight: 20 },
+  ratingSummary: { fontSize: 13, color: COLORS.sand, marginTop: 6, fontWeight: '700' },
+  ratingSummaryMoss: { fontSize: 13, color: COLORS.moss, fontWeight: '700' },
+  description: { fontSize: 14, color: COLORS.body, marginTop: 12, lineHeight: 20 },
   detailLineRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 8 },
-  detailLine: { fontSize: 13, color: '#5C4033' },
-  editButton: { marginTop: 16, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  editButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  detailLine: { fontSize: 13, color: COLORS.body },
+  editButton: { marginTop: 16, backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  editButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
   editForm: { paddingHorizontal: 20, marginTop: 16 },
-  label: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 6, marginTop: 14 },
+  label: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 6, marginTop: 14 },
   input: {
-    backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#431407',
+    backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: COLORS.ink,
   },
   textArea: { minHeight: 70, textAlignVertical: 'top' },
   editActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
-  cancelButton: { flex: 1, borderWidth: 2, borderColor: '#FED7AA', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  cancelButtonText: { color: '#9A6B4B', fontWeight: '800', fontSize: 13 },
-  saveButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  saveButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  reviewForm: { paddingHorizontal: 20, marginTop: 24, backgroundColor: 'white', marginHorizontal: 20, borderRadius: 16, padding: 16 },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#431407', marginBottom: 10 },
+  cancelButton: { flex: 1, borderWidth: 2, borderColor: COLORS.border, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  cancelButtonText: { color: COLORS.sand, fontWeight: '800', fontSize: 13 },
+  saveButton: { flex: 1, backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  saveButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
+  reviewForm: { paddingHorizontal: 20, marginTop: 24, backgroundColor: COLORS.white, marginHorizontal: 20, borderRadius: 16, padding: 16, ...SHADOW },
+  sectionTitle: { fontSize: 15, fontWeight: '800', color: COLORS.ink, marginBottom: 10 },
   starRow: { flexDirection: 'row', gap: 6, marginBottom: 12 },
-  submitReviewButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
-  submitReviewText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  submitReviewButton: { backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center', marginTop: 12 },
+  submitReviewText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
   reviewsList: { paddingHorizontal: 20, marginTop: 24 },
-  noReviewsText: { fontSize: 13, color: '#9A6B4B' },
-  reviewCard: { backgroundColor: 'white', borderRadius: 14, padding: 14, marginBottom: 10, ...CARD_SHADOW },
+  noReviewsText: { fontSize: 13, color: COLORS.sand },
+  reviewCard: { backgroundColor: COLORS.white, borderRadius: 14, padding: 14, marginBottom: 10, ...SHADOW },
   reviewHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  reviewerName: { fontSize: 13, fontWeight: '800', color: '#431407' },
+  reviewerName: { fontSize: 13, fontWeight: '800', color: COLORS.ink },
   reviewStarsRow: { flexDirection: 'row', gap: 2 },
-  reviewComment: { fontSize: 13, color: '#5C4033', marginTop: 8, lineHeight: 19 },
+  reviewComment: { fontSize: 13, color: COLORS.body, marginTop: 8, lineHeight: 19 },
 });

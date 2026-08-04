@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { Trash2, Plus, PartyPopper } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
+import { COLORS } from '../../../lib/theme';
 
 const MIN_PHOTOS = 2;
 const MAX_PHOTOS = 8;
@@ -123,7 +124,7 @@ export default function Photos() {
               <Image source={{ uri: photo.uri }} style={styles.photo} />
             </TouchableOpacity>
             <TouchableOpacity style={styles.deleteButton} onPress={() => removePhoto(i)}>
-              <Trash2 size={12} color="white" />
+              <Trash2 size={12} color={COLORS.white} />
             </TouchableOpacity>
             {i === 0 && (
               <View style={styles.mainBadge}>
@@ -134,7 +135,7 @@ export default function Photos() {
         ))}
         {photos.length < MAX_PHOTOS && (
           <TouchableOpacity style={styles.addSlot} onPress={pickImage}>
-            <Plus size={26} color="#FB923C" strokeWidth={3} />
+            <Plus size={26} color={COLORS.clay} strokeWidth={3} />
           </TouchableOpacity>
         )}
       </View>
@@ -147,7 +148,7 @@ export default function Photos() {
         ) : (
           <>
             <Text style={styles.buttonText}>Tamamla</Text>
-            <PartyPopper size={18} color="white" />
+            <PartyPopper size={18} color={COLORS.white} />
           </>
         )}
       </TouchableOpacity>
@@ -156,10 +157,10 @@ export default function Photos() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 24, paddingTop: 64, backgroundColor: '#FFF7ED', flexGrow: 1 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', marginTop: 16, fontFamily: 'Fredoka_700Bold' },
-  subtitle: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
-  hint: { fontSize: 12, color: '#B9977C', marginTop: 6, marginBottom: 24, lineHeight: 17 },
+  container: { padding: 24, paddingTop: 64, backgroundColor: COLORS.cream, flexGrow: 1 },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, marginTop: 16, fontFamily: 'Fredoka_700Bold' },
+  subtitle: { fontSize: 14, color: COLORS.sand, marginTop: 4 },
+  hint: { fontSize: 12, color: COLORS.placeholder, marginTop: 6, marginBottom: 24, lineHeight: 17 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
   photoSlot: { width: 75, height: 75, borderRadius: 16, overflow: 'hidden', position: 'relative' },
   photo: { width: '100%', height: '100%' },
@@ -168,15 +169,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.55)', alignItems: 'center', justifyContent: 'center',
   },
   mainBadge: { position: 'absolute', bottom: 0, left: 0, right: 0, backgroundColor: 'rgba(251,146,60,0.9)', paddingVertical: 2 },
-  mainBadgeText: { color: 'white', fontSize: 9, fontWeight: '800', textAlign: 'center' },
+  mainBadgeText: { color: COLORS.white, fontSize: 9, fontWeight: '800', textAlign: 'center' },
   addSlot: {
-    width: 75, height: 75, borderRadius: 16, borderWidth: 2, borderColor: '#FED7AA',
-    borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: '#FFEDD5',
+    width: 75, height: 75, borderRadius: 16, borderWidth: 2, borderColor: COLORS.border,
+    borderStyle: 'dashed', alignItems: 'center', justifyContent: 'center', backgroundColor: COLORS.peach,
   },
-  errorText: { color: '#DC2626', fontSize: 13, marginTop: 16 },
+  errorText: { color: COLORS.danger, fontSize: 13, marginTop: 16 },
   button: {
-    backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
+    backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 16, alignItems: 'center', marginTop: 24,
   },
   buttonRow: { flexDirection: 'row', justifyContent: 'center', gap: 8 },
-  buttonText: { color: 'white', fontSize: 16, fontWeight: '800' },
+  buttonText: { color: COLORS.white, fontSize: 16, fontWeight: '800' },
 });

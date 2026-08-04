@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Animated, TouchableOpacity, ActivityIndicator }
 import { useRouter } from 'expo-router';
 import { supabase } from '../../lib/supabase';
 import PawMeetAnimation from '../components/PawMeetAnimation';
+import { COLORS } from '../../lib/theme';
 
 export default function Index() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function Index() {
   if (checkingSession) {
     return (
       <View style={[styles.container, { justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color="white" />
+        <ActivityIndicator size="large" color={COLORS.white} />
       </View>
     );
   }
@@ -79,7 +80,7 @@ export default function Index() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#FB923C',
+    backgroundColor: COLORS.clay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: 24,
@@ -88,12 +89,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 42,
     fontWeight: '900',
-    color: 'white',
+    color: COLORS.white,
     letterSpacing: 2,
   },
   subtitle: {
     fontSize: 14,
-    color: 'white',
+    color: COLORS.white,
     marginTop: 8,
     textAlign: 'center',
     opacity: 0.9,
@@ -104,26 +105,26 @@ const styles = StyleSheet.create({
     marginTop: 64,
   },
   primaryButton: {
-    backgroundColor: 'white',
+    backgroundColor: COLORS.white,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
   },
   primaryButtonText: {
-    color: '#FB923C',
+    color: COLORS.clay,
     fontWeight: '800',
     fontSize: 16,
   },
   secondaryButton: {
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: COLORS.white,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: 'center',
     marginTop: 12,
   },
   secondaryButtonText: {
-    color: 'white',
+    color: COLORS.white,
     fontWeight: '800',
     fontSize: 16,
   },

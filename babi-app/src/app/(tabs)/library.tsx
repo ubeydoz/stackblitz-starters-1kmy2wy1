@@ -2,15 +2,7 @@ import { useEffect, useState } from 'react';
 import { View, Text, TextInput, StyleSheet, FlatList, SectionList, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { BookOpen, Bot, ChevronDown, ChevronUp } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const TEAL = '#0891A6';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 const CATEGORY_ORDER = ['Beslenme', 'Sağlık & Aşı', 'Eğitim & Davranış', 'Ev Bakımı', 'Sosyalleşme'];
 
@@ -114,7 +106,7 @@ export default function Library() {
   const aiSection = (
     <View style={styles.aiSection}>
       <View style={styles.aiSectionTitleRow}>
-        <Bot size={18} color="#431407" />
+        <Bot size={18} color={COLORS.ink} />
         <Text style={styles.aiSectionTitle}>AI'ya Sor</Text>
       </View>
       <Text style={styles.aiSectionSubtitle}>
@@ -146,7 +138,7 @@ export default function Library() {
   return (
     <View style={styles.container}>
       <View style={styles.titleRow}>
-        <BookOpen size={22} color="#431407" />
+        <BookOpen size={22} color={COLORS.ink} />
         <Text style={styles.title}>Kütüphane</Text>
       </View>
 
@@ -158,7 +150,7 @@ export default function Library() {
       />
 
       {loading ? (
-        <ActivityIndicator size="large" color="#FB923C" style={{ marginTop: 32 }} />
+        <ActivityIndicator size="large" color={COLORS.clay} style={{ marginTop: 32 }} />
       ) : isSearching ? (
         <FlatList
           data={filtered}
@@ -191,9 +183,9 @@ export default function Library() {
                 </View>
               </View>
               {expandedCategories.has(section.title) ? (
-                <ChevronUp size={18} color={TEAL} />
+                <ChevronUp size={18} color={COLORS.teal} />
               ) : (
-                <ChevronDown size={18} color={TEAL} />
+                <ChevronDown size={18} color={COLORS.teal} />
               )}
             </TouchableOpacity>
           )}
@@ -211,40 +203,40 @@ export default function Library() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64 },
+  container: { flex: 1, backgroundColor: COLORS.cream, padding: 20, paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
   searchInput: {
-    backgroundColor: 'white', borderRadius: 16, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, color: '#431407', marginBottom: 16,
+    backgroundColor: COLORS.white, borderRadius: 16, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 16, paddingVertical: 12, fontSize: 14, color: COLORS.ink, marginBottom: 16,
   },
-  emptyText: { textAlign: 'center', color: '#9A6B4B', marginTop: 16, marginBottom: 16 },
+  emptyText: { textAlign: 'center', color: COLORS.sand, marginTop: 16, marginBottom: 16 },
   sectionHeader: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
     paddingVertical: 10, marginTop: 6, marginBottom: 4,
   },
   sectionHeaderLeft: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  sectionHeaderTitle: { fontSize: 13, fontWeight: '800', color: TEAL, letterSpacing: 0.5 },
+  sectionHeaderTitle: { fontSize: 13, fontWeight: '800', color: COLORS.teal, letterSpacing: 0.5 },
   sectionHeaderCountBadge: { backgroundColor: '#E0F2F4', borderRadius: 10, paddingHorizontal: 8, paddingVertical: 2 },
-  sectionHeaderCountText: { fontSize: 11, fontWeight: '800', color: TEAL },
-  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, ...CARD_SHADOW },
+  sectionHeaderCountText: { fontSize: 11, fontWeight: '800', color: COLORS.teal },
+  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, marginBottom: 12, ...SHADOW },
   breedTag: {
-    alignSelf: 'flex-start', backgroundColor: '#FFEDD5', color: '#FB923C', fontSize: 10, fontWeight: '800',
+    alignSelf: 'flex-start', backgroundColor: COLORS.peach, color: COLORS.clay, fontSize: 10, fontWeight: '800',
     paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8, marginBottom: 8,
   },
-  cardTitle: { fontSize: 16, fontWeight: '800', color: '#431407', marginBottom: 6 },
-  cardBody: { fontSize: 13, color: '#9A6B4B', lineHeight: 20 },
-  aiSection: { marginTop: 12, backgroundColor: '#FFEDD5', borderRadius: 20, padding: 18 },
+  cardTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink, marginBottom: 6 },
+  cardBody: { fontSize: 13, color: COLORS.sand, lineHeight: 20 },
+  aiSection: { marginTop: 12, backgroundColor: COLORS.peach, borderRadius: 20, padding: 18 },
   aiSectionTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  aiSectionTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
-  aiSectionSubtitle: { fontSize: 12, color: '#9A6B4B', marginBottom: 14 },
+  aiSectionTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
+  aiSectionSubtitle: { fontSize: 12, color: COLORS.sand, marginBottom: 14 },
   aiInput: {
-    backgroundColor: 'white', borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
-    fontSize: 13, color: '#431407', minHeight: 60, textAlignVertical: 'top',
+    backgroundColor: COLORS.white, borderRadius: 14, paddingHorizontal: 14, paddingVertical: 10,
+    fontSize: 13, color: COLORS.ink, minHeight: 60, textAlignVertical: 'top',
   },
-  aiButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
-  aiButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  aiError: { color: '#DC2626', fontSize: 12, marginTop: 10 },
-  aiAnswerCard: { backgroundColor: 'white', borderRadius: 14, padding: 14, marginTop: 14, ...CARD_SHADOW },
-  aiAnswerText: { fontSize: 13, color: '#431407', lineHeight: 20 },
+  aiButton: { backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center', marginTop: 10 },
+  aiButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
+  aiError: { color: COLORS.danger, fontSize: 12, marginTop: 10 },
+  aiAnswerCard: { backgroundColor: COLORS.white, borderRadius: 14, padding: 14, marginTop: 14, ...SHADOW },
+  aiAnswerText: { fontSize: 13, color: COLORS.ink, lineHeight: 20 },
 });

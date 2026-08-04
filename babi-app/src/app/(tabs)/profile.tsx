@@ -3,18 +3,12 @@ import { View, Text, Image, StyleSheet, TouchableOpacity, ActivityIndicator, Scr
 import { useRouter, useFocusEffect } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import DraggableFlatList, { RenderItemParams } from 'react-native-draggable-flatlist';
-import { ImageOff, Plus, X, Star, GripVertical, Trash2, Building2, Pencil } from 'lucide-react-native';
+import {
+  ImageOff, Plus, X, Star, GripVertical, Trash2, Building2, Pencil,
+  User, FileText, Share2, Camera, ThumbsUp, AtSign, Music2, Ghost,
+} from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const TEAL = '#0891A6';
-const TEAL_DARK = '#066670';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 type DogPhoto = { id: string; url: string; position?: number };
 
@@ -29,6 +23,7 @@ export default function Profile() {
   const [dogName, setDogName] = useState('');
   const [dogBreed, setDogBreed] = useState('');
   const [dogAge, setDogAge] = useState<number | null>(null);
+  const [dogWeight, setDogWeight] = useState<number | null>(null);
   const [photoUrl, setPhotoUrl] = useState<string | null>(null);
   const [dogPhotos, setDogPhotos] = useState<DogPhoto[]>([]);
   const [photoUploading, setPhotoUploading] = useState(false);
@@ -83,7 +78,7 @@ export default function Profile() {
 
     const { data: dogs } = await supabase
       .from('dogs')
-      .select('id, name, breed, age, dog_photos(id, url, position)')
+      .select('id, name, breed, age, weight, dog_photos(id, url, position)')
       .eq('owner_id', userId)
       .limit(1);
 
@@ -93,6 +88,7 @@ export default function Profile() {
       setDogName(dog.name);
       setDogBreed(dog.breed);
       setDogAge(dog.age);
+      setDogWeight((dog as any).weight ?? null);
       const photos = ((dog as any).dog_photos || []) as DogPhoto[];
       photos.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
       setDogPhotos(photos);
@@ -358,13 +354,13 @@ export default function Profile() {
             {index === 0 ? <Text style={styles.reorderMainBadge}>Ana Foto</Text> : null}
             {item.id === bestPhotoId ? (
               <View style={styles.reorderBestBadgeRow}>
-                <Star size={11} color={TEAL_DARK} fill={TEAL_DARK} />
+                <Star size={11} color={COLORS.tealDark} fill={COLORS.tealDark} />
                 <Text style={styles.reorderBestBadge}>En Beğenilen</Text>
               </View>
             ) : null}
           </View>
         </View>
-        <GripVertical size={20} color="#9A6B4B" />
+        <GripVertical size={20} color={COLORS.sand} />
       </TouchableOpacity>
     );
   }
@@ -475,7 +471,7 @@ export default function Profile() {
   if (loading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#FB923C" />
+        <ActivityIndicator size="large" color={COLORS.clay} />
       </View>
     );
   }
@@ -488,15 +484,15 @@ export default function Profile() {
             <Image source={{ uri: photoUrl }} style={styles.heroPhoto} />
           ) : (
             <View style={[styles.heroPhoto, styles.noPhoto]}>
-              <ImageOff size={28} color="#FB923C" />
+              <ImageOff size={28} color={COLORS.clay} />
             </View>
           )}
         </TouchableOpacity>
         <TouchableOpacity style={styles.heroAddButton} onPress={pickDogPhoto} disabled={photoUploading}>
           {photoUploading ? (
-            <ActivityIndicator size="small" color="white" />
+            <ActivityIndicator size="small" color={COLORS.white} />
           ) : (
-            <Plus size={22} color="white" strokeWidth={3} />
+            <Plus size={22} color={COLORS.white} strokeWidth={3} />
           )}
         </TouchableOpacity>
       </View>
@@ -507,8 +503,26 @@ export default function Profile() {
           <Text style={styles.dogBreed}>{dogBreed}</Text>
         </View>
         <TouchableOpacity style={styles.editDogButton} onPress={() => router.push('/dog/edit')}>
-          <Pencil size={14} color="#FB923C" />
+          <Pencil size={14} color={COLORS.clay} />
         </TouchableOpacity>
+      </View>
+
+      <View style={styles.statChipRow}>
+        {dogBreed ? (
+          <View style={styles.statChip}>
+            <Text style={styles.statChipText}>{dogBreed}</Text>
+          </View>
+        ) : null}
+        {dogAge != null ? (
+          <View style={styles.statChip}>
+            <Text style={styles.statChipText}>{dogAge} yaş</Text>
+          </View>
+        ) : null}
+        {dogWeight != null ? (
+          <View style={styles.statChip}>
+            <Text style={styles.statChipText}>{dogWeight} kg</Text>
+          </View>
+        ) : null}
       </View>
 
       <View style={styles.ownerCard}>
@@ -519,15 +533,18 @@ export default function Profile() {
             ) : (
               <View style={[styles.ownerAvatar, styles.noOwnerAvatar]}>
                 {avatarUploading ? (
-                  <ActivityIndicator size="small" color="#FB923C" />
+                  <ActivityIndicator size="small" color={COLORS.clay} />
                 ) : (
-                  <Plus size={18} color="#FB923C" strokeWidth={3} />
+                  <Plus size={18} color={COLORS.clay} strokeWidth={3} />
                 )}
               </View>
             )}
           </TouchableOpacity>
           <View style={styles.ownerTextWrap}>
-            <Text style={styles.ownerLabel}>SAHİBİ</Text>
+            <View style={styles.labelRow}>
+              <User size={11} color={COLORS.teal} />
+              <Text style={styles.ownerLabel}>SAHİBİ</Text>
+            </View>
             <Text style={styles.ownerName}>{fullName}</Text>
           </View>
         </View>
@@ -550,20 +567,51 @@ export default function Profile() {
         <>
           {bio ? (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>BİYOGRAFİ</Text>
+              <View style={styles.labelRow}>
+                <FileText size={11} color={COLORS.teal} />
+                <Text style={styles.sectionLabel}>BİYOGRAFİ</Text>
+              </View>
               <Text style={styles.bioText}>{bio}</Text>
             </View>
           ) : null}
 
           {(instagram || facebook || twitter || tiktok || snapchat) ? (
             <View style={styles.section}>
-              <Text style={styles.sectionLabel}>SOSYAL MEDYA</Text>
+              <View style={styles.labelRow}>
+                <Share2 size={11} color={COLORS.teal} />
+                <Text style={styles.sectionLabel}>SOSYAL MEDYA</Text>
+              </View>
               <View style={styles.socialRow}>
-                {instagram ? <Text style={styles.socialTag}>📷 {instagram}</Text> : null}
-                {facebook ? <Text style={styles.socialTag}>👤 {facebook}</Text> : null}
-                {twitter ? <Text style={styles.socialTag}>🐦 {twitter}</Text> : null}
-                {tiktok ? <Text style={styles.socialTag}>🎵 {tiktok}</Text> : null}
-                {snapchat ? <Text style={styles.socialTag}>👻 {snapchat}</Text> : null}
+                {instagram ? (
+                  <View style={styles.socialTag}>
+                    <Camera size={12} color={COLORS.ink} />
+                    <Text style={styles.socialTagText}>{instagram}</Text>
+                  </View>
+                ) : null}
+                {facebook ? (
+                  <View style={styles.socialTag}>
+                    <ThumbsUp size={12} color={COLORS.ink} />
+                    <Text style={styles.socialTagText}>{facebook}</Text>
+                  </View>
+                ) : null}
+                {twitter ? (
+                  <View style={styles.socialTag}>
+                    <AtSign size={12} color={COLORS.ink} />
+                    <Text style={styles.socialTagText}>{twitter}</Text>
+                  </View>
+                ) : null}
+                {tiktok ? (
+                  <View style={styles.socialTag}>
+                    <Music2 size={12} color={COLORS.ink} />
+                    <Text style={styles.socialTagText}>{tiktok}</Text>
+                  </View>
+                ) : null}
+                {snapchat ? (
+                  <View style={styles.socialTag}>
+                    <Ghost size={12} color={COLORS.ink} />
+                    <Text style={styles.socialTagText}>{snapchat}</Text>
+                  </View>
+                ) : null}
               </View>
             </View>
           ) : null}
@@ -610,7 +658,7 @@ export default function Profile() {
       )}
 
       <TouchableOpacity style={styles.businessLinkButtonRow} onPress={goToManageBusiness}>
-        <Building2 size={14} color="#9A6B4B" />
+        <Building2 size={14} color={COLORS.sand} />
         <Text style={styles.businessLinkText}>İşletmelerimi Yönet</Text>
       </TouchableOpacity>
 
@@ -640,7 +688,7 @@ export default function Profile() {
                   <Text style={styles.modalReorderToggle}>{reorderMode ? 'Bitti' : 'Sırala'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => { setGalleryVisible(false); setReorderMode(false); }}>
-                  <X size={20} color="#9A6B4B" />
+                  <X size={20} color={COLORS.sand} />
                 </TouchableOpacity>
               </View>
             </View>
@@ -658,7 +706,7 @@ export default function Profile() {
                   style={styles.reorderList}
                 />
                 {reordering ? (
-                  <ActivityIndicator size="small" color="#FB923C" style={{ marginTop: 8 }} />
+                  <ActivityIndicator size="small" color={COLORS.clay} style={{ marginTop: 8 }} />
                 ) : null}
               </>
             ) : (
@@ -674,7 +722,7 @@ export default function Profile() {
                       ) : null}
                       {photo.id === bestPhotoId ? (
                         <View style={styles.bestPhotoBadge}>
-                          <Star size={12} color="white" fill="white" />
+                          <Star size={12} color={COLORS.white} fill={COLORS.white} />
                           <Text style={styles.bestPhotoBadgeText}>En Beğenilen</Text>
                         </View>
                       ) : null}
@@ -682,7 +730,7 @@ export default function Profile() {
                         style={styles.galleryDeleteButton}
                         onPress={() => confirmDeletePhoto(photo.id)}
                       >
-                        <Trash2 size={16} color="white" />
+                        <Trash2 size={16} color={COLORS.white} />
                       </TouchableOpacity>
                       {index !== 0 ? (
                         <TouchableOpacity
@@ -691,7 +739,7 @@ export default function Profile() {
                           disabled={settingMain}
                         >
                           {settingMain ? (
-                            <ActivityIndicator size="small" color="white" />
+                            <ActivityIndicator size="small" color={COLORS.white} />
                           ) : (
                             <Text style={styles.galleryMainButtonText}>Ana Foto Yap</Text>
                           )}
@@ -706,10 +754,10 @@ export default function Profile() {
                       disabled={photoUploading}
                     >
                       {photoUploading ? (
-                        <ActivityIndicator color="#FB923C" />
+                        <ActivityIndicator color={COLORS.clay} />
                       ) : (
                         <>
-                          <Plus size={22} color="#FB923C" strokeWidth={3} />
+                          <Plus size={22} color={COLORS.clay} strokeWidth={3} />
                           <Text style={styles.galleryAddText}>Fotoğraf{'\n'}Ekle</Text>
                         </>
                       )}
@@ -730,62 +778,73 @@ export default function Profile() {
 }
 
 const styles = StyleSheet.create({
-  container: { padding: 20, paddingTop: 96, backgroundColor: '#FFF7ED', flexGrow: 1, alignItems: 'center' },
-  centerContainer: { flex: 1, backgroundColor: '#FFF7ED', alignItems: 'center', justifyContent: 'center' },
+  container: { padding: 20, paddingTop: 96, backgroundColor: COLORS.cream, flexGrow: 1, alignItems: 'center' },
+  centerContainer: { flex: 1, backgroundColor: COLORS.cream, alignItems: 'center', justifyContent: 'center' },
   heroWrap: { position: 'relative', marginBottom: 16 },
   heroPhoto: { width: 140, height: 140, borderRadius: 70 },
-  noPhoto: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
+  noPhoto: { backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center' },
   heroAddButton: {
     position: 'absolute', bottom: 2, right: 2, width: 40, height: 40, borderRadius: 20,
-    backgroundColor: '#FB923C', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 3, borderColor: '#FFF7ED',
+    backgroundColor: COLORS.clay, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 3, borderColor: COLORS.cream,
   },
-  dogNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 20 },
-  dogName: { fontSize: 22, fontWeight: '900', color: '#431407', fontFamily: 'Fredoka_700Bold' },
-  dogBreed: { fontSize: 14, color: '#9A6B4B', marginTop: 4 },
+  dogNameRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 10 },
+  dogName: { fontSize: 22, fontWeight: '900', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
+  dogBreed: { fontSize: 14, color: COLORS.sand, marginTop: 4 },
   editDogButton: {
-    width: 30, height: 30, borderRadius: 15, backgroundColor: 'white',
-    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#FED7AA',
+    width: 30, height: 30, borderRadius: 15, backgroundColor: COLORS.white,
+    alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: COLORS.border,
   },
-  ownerCard: { backgroundColor: 'white', borderRadius: 16, padding: 16, width: '100%', maxWidth: 320, ...CARD_SHADOW },
+  statChipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, justifyContent: 'center', marginBottom: 20 },
+  statChip: {
+    borderWidth: 1.5, borderColor: COLORS.teal, borderRadius: 12,
+    paddingHorizontal: 12, paddingVertical: 5,
+  },
+  statChipText: { fontSize: 12, fontWeight: '700', color: COLORS.teal },
+  ownerCard: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, width: '100%', maxWidth: 320, ...SHADOW },
   ownerRow: { flexDirection: 'row', alignItems: 'center' },
-  ownerAvatar: { width: 48, height: 48, borderRadius: 24 },
-  noOwnerAvatar: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
+  ownerAvatar: { width: 48, height: 48, borderRadius: 24, borderWidth: 3, borderColor: COLORS.teal },
+  noOwnerAvatar: { backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center' },
   ownerTextWrap: { marginLeft: 12, flex: 1 },
-  ownerLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1 },
-  ownerName: { fontSize: 16, fontWeight: '700', color: '#431407', marginTop: 4 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  ownerLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1 },
+  ownerName: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginTop: 4 },
   avatarActions: { flexDirection: 'row', gap: 16, marginTop: 12 },
-  avatarActionText: { color: '#FB923C', fontWeight: '800', fontSize: 12 },
-  avatarRemoveText: { color: '#DC2626', fontWeight: '800', fontSize: 12 },
+  avatarActionText: { color: COLORS.clay, fontWeight: '800', fontSize: 12 },
+  avatarRemoveText: { color: COLORS.danger, fontWeight: '800', fontSize: 12 },
   section: { width: '100%', maxWidth: 320, marginTop: 16 },
-  sectionLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 8 },
-  bioText: { fontSize: 13, color: '#5C4033', lineHeight: 20, backgroundColor: 'white', borderRadius: 12, padding: 12 },
-  socialRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  socialTag: { backgroundColor: 'white', borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, color: '#431407' },
-  editButton: { marginTop: 24, backgroundColor: '#FB923C', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 28 },
-  editButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  sectionLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1 },
+  bioText: { fontSize: 13, color: COLORS.body, lineHeight: 20, backgroundColor: COLORS.white, borderRadius: 12, padding: 12, marginTop: 8, ...SHADOW },
+  socialRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 8 },
+  socialTag: {
+    flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: COLORS.white,
+    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 6,
+  },
+  socialTagText: { fontSize: 12, color: COLORS.ink },
+  editButton: { marginTop: 24, backgroundColor: COLORS.clay, borderRadius: 16, paddingVertical: 12, paddingHorizontal: 28 },
+  editButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
   editForm: { width: '100%', maxWidth: 320, marginTop: 16 },
-  fieldLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
-  input: { backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA', paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, color: '#431407' },
+  fieldLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  input: { backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, color: COLORS.ink },
   bioInput: { minHeight: 70, textAlignVertical: 'top' },
   editActions: { flexDirection: 'row', gap: 10, marginTop: 20 },
-  cancelButton: { flex: 1, borderWidth: 2, borderColor: '#FED7AA', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  cancelButtonText: { color: '#9A6B4B', fontWeight: '800', fontSize: 13 },
-  saveButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  saveButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
+  cancelButton: { flex: 1, borderWidth: 2, borderColor: COLORS.border, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  cancelButtonText: { color: COLORS.sand, fontWeight: '800', fontSize: 13 },
+  saveButton: { flex: 1, backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  saveButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
   businessLinkButtonRow: { marginTop: 12, paddingVertical: 10, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', gap: 6 },
-  businessLinkText: { color: '#9A6B4B', fontWeight: '700', fontSize: 13 },
+  businessLinkText: { color: COLORS.sand, fontWeight: '700', fontSize: 13 },
   logoutButton: { marginTop: 4, paddingVertical: 12, paddingHorizontal: 32 },
-  logoutText: { color: '#DC2626', fontWeight: '800', fontSize: 14 },
+  logoutText: { color: COLORS.danger, fontWeight: '800', fontSize: 14 },
   deleteAccountButton: { marginTop: 0, paddingVertical: 10, paddingHorizontal: 24 },
-  deleteAccountText: { color: '#9A6B4B', fontWeight: '700', fontSize: 12, textDecorationLine: 'underline' },
+  deleteAccountText: { color: COLORS.sand, fontWeight: '700', fontSize: 12, textDecorationLine: 'underline' },
 
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36, maxHeight: '80%' },
+  modalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 28, borderTopRightRadius: 28, padding: 20, paddingBottom: 36, maxHeight: '80%' },
   modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
-  modalTitle: { fontSize: 16, fontWeight: '800', color: '#431407' },
+  modalTitle: { fontSize: 16, fontWeight: '800', color: COLORS.ink },
   modalHeaderActions: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  modalReorderToggle: { color: '#FB923C', fontWeight: '800', fontSize: 13 },
+  modalReorderToggle: { color: COLORS.clay, fontWeight: '800', fontSize: 13 },
   galleryPage: { width: 280, height: 280, borderRadius: 20, overflow: 'hidden', marginRight: 12, position: 'relative' },
   galleryFullImage: { width: '100%', height: '100%' },
   galleryDeleteButton: {
@@ -793,41 +852,41 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0,0,0,0.5)', alignItems: 'center', justifyContent: 'center',
   },
   galleryAddPage: {
-    backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center',
-    borderWidth: 2, borderColor: '#FED7AA', borderStyle: 'dashed', gap: 6,
+    backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center',
+    borderWidth: 2, borderColor: COLORS.border, borderStyle: 'dashed', gap: 6,
   },
-  galleryAddText: { color: '#FB923C', fontWeight: '800', fontSize: 14, textAlign: 'center' },
-  galleryHint: { fontSize: 11, color: '#9A6B4B', marginTop: 12, textAlign: 'center' },
+  galleryAddText: { color: COLORS.clay, fontWeight: '800', fontSize: 14, textAlign: 'center' },
+  galleryHint: { fontSize: 11, color: COLORS.sand, marginTop: 12, textAlign: 'center' },
   bestPhotoBadge: {
-    position: 'absolute', top: 10, left: 10, backgroundColor: TEAL_DARK,
+    position: 'absolute', top: 10, left: 10, backgroundColor: COLORS.tealDark,
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
     flexDirection: 'row', alignItems: 'center', gap: 4,
   },
-  bestPhotoBadgeText: { color: 'white', fontWeight: '800', fontSize: 11 },
+  bestPhotoBadgeText: { color: COLORS.white, fontWeight: '800', fontSize: 11 },
   mainPhotoBadge: {
     position: 'absolute', top: 10, right: 54, backgroundColor: 'rgba(0,0,0,0.55)',
     borderRadius: 10, paddingHorizontal: 10, paddingVertical: 5,
   },
-  mainPhotoBadgeText: { color: 'white', fontWeight: '800', fontSize: 11 },
+  mainPhotoBadgeText: { color: COLORS.white, fontWeight: '800', fontSize: 11 },
   galleryMainButton: {
     position: 'absolute', bottom: 10, left: 10, right: 10,
     backgroundColor: 'rgba(251,146,60,0.92)', borderRadius: 12,
     paddingVertical: 9, alignItems: 'center', justifyContent: 'center', minHeight: 34,
   },
-  galleryMainButtonText: { color: 'white', fontWeight: '800', fontSize: 12 },
+  galleryMainButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 12 },
 
-  reorderHint: { fontSize: 12, color: '#9A6B4B', marginBottom: 12, lineHeight: 18 },
+  reorderHint: { fontSize: 12, color: COLORS.sand, marginBottom: 12, lineHeight: 18 },
   reorderList: { maxHeight: 360 },
   reorderRow: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: 'white',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white,
     borderRadius: 14, padding: 10, marginBottom: 8,
   },
-  reorderRowActive: { backgroundColor: '#FFEDD5', opacity: 0.9 },
+  reorderRowActive: { backgroundColor: COLORS.peach, opacity: 0.9 },
   reorderThumb: { width: 50, height: 50, borderRadius: 10 },
   reorderTextWrap: { marginLeft: 12, flex: 1 },
-  reorderIndex: { fontSize: 13, fontWeight: '700', color: '#431407' },
+  reorderIndex: { fontSize: 13, fontWeight: '700', color: COLORS.ink },
   reorderBadgeRow: { flexDirection: 'row', gap: 8, marginTop: 2 },
-  reorderMainBadge: { fontSize: 10, fontWeight: '800', color: '#FB923C' },
+  reorderMainBadge: { fontSize: 10, fontWeight: '800', color: COLORS.clay },
   reorderBestBadgeRow: { flexDirection: 'row', alignItems: 'center', gap: 3 },
-  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: TEAL_DARK },
+  reorderBestBadge: { fontSize: 10, fontWeight: '800', color: COLORS.tealDark },
 });

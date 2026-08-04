@@ -7,15 +7,7 @@ import {
   Calendar as CalendarIcon, Bell, List, LucideIcon,
 } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const TEAL = '#0891A6';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 type RecordType = 'vaccine' | 'checkup' | 'medication' | 'other';
 
@@ -107,8 +99,8 @@ export default function Health() {
 
     const marks: MarkedDates = {};
     fetched.forEach(r => {
-      if (r.date) marks[r.date] = { marked: true, dotColor: '#FB923C' };
-      if (r.next_date) marks[r.next_date] = { marked: true, dotColor: '#22C55E' };
+      if (r.date) marks[r.date] = { marked: true, dotColor: COLORS.clay };
+      if (r.next_date) marks[r.next_date] = { marked: true, dotColor: COLORS.success };
     });
     setMarkedDates(marks);
     setLoading(false);
@@ -236,7 +228,7 @@ export default function Health() {
   const filteredRecords = categoryFilter === 'all' ? records : records.filter(r => r.record_type === categoryFilter);
 
   if (loading) {
-    return <View style={styles.center}><ActivityIndicator size="large" color="#FB923C" /></View>;
+    return <View style={styles.center}><ActivityIndicator size="large" color={COLORS.clay} /></View>;
   }
 
   return (
@@ -255,7 +247,7 @@ export default function Health() {
                     <TouchableOpacity key={item.key}
                       style={[styles.chip, styles.chipIconRow, newItemKey === item.key && styles.chipActive]}
                       onPress={() => selectHealthItem(item)}>
-                      <item.Icon size={14} color={newItemKey === item.key ? 'white' : '#9A6B4B'} />
+                      <item.Icon size={14} color={newItemKey === item.key ? COLORS.white : COLORS.sand} />
                       <Text style={[styles.chipText, newItemKey === item.key && styles.chipTextActive]}>{item.label}</Text>
                     </TouchableOpacity>
                   ))}
@@ -270,7 +262,7 @@ export default function Health() {
 
                 <Text style={styles.fieldLabel}>TARİH</Text>
                 <TouchableOpacity style={[styles.datePickerButton, styles.datePickerButtonRow]} onPress={() => setFormStep('pick_date')}>
-                  <CalendarIcon size={15} color={newDate ? '#431407' : '#9A6B4B'} />
+                  <CalendarIcon size={15} color={newDate ? COLORS.ink : COLORS.sand} />
                   <Text style={newDate ? styles.dateSelected : styles.datePlaceholder}>
                     {newDate ? formatDate(newDate) : 'Tarih seç'}
                   </Text>
@@ -281,14 +273,14 @@ export default function Health() {
                 </Text>
                 {selectedItem.intervalMonths ? (
                   <View style={[styles.datePickerButton, styles.datePickerButtonRow, styles.datePickerAuto]}>
-                    <Bell size={15} color="#431407" />
+                    <Bell size={15} color={COLORS.ink} />
                     <Text style={styles.dateSelected}>
                       {newNextDate ? formatDate(newNextDate) : `Tarih seçince ${selectedItem.intervalMonths} ay sonrasına ayarlanır`}
                     </Text>
                   </View>
                 ) : (
                   <TouchableOpacity style={[styles.datePickerButton, styles.datePickerButtonRow]} onPress={() => setFormStep('pick_next_date')}>
-                    <Bell size={15} color={newNextDate ? '#431407' : '#9A6B4B'} />
+                    <Bell size={15} color={newNextDate ? COLORS.ink : COLORS.sand} />
                     <Text style={newNextDate ? styles.dateSelected : styles.datePlaceholder}>
                       {newNextDate ? formatDate(newNextDate) : 'Sonraki randevu tarihi seç'}
                     </Text>
@@ -323,16 +315,16 @@ export default function Health() {
                     else { setNewNextDate(day.dateString); setFormStep('form'); }
                   }}
                   markedDates={formStep === 'pick_date' && newDate ? {
-                    [newDate]: { selected: true, selectedColor: '#FB923C', marked: false, dotColor: '' }
+                    [newDate]: { selected: true, selectedColor: COLORS.clay, marked: false, dotColor: '' }
                   } : formStep === 'pick_next_date' && newNextDate ? {
-                    [newNextDate]: { selected: true, selectedColor: '#22C55E', marked: false, dotColor: '' }
+                    [newNextDate]: { selected: true, selectedColor: COLORS.success, marked: false, dotColor: '' }
                   } : {}}
                   theme={{
-                    backgroundColor: '#FFF7ED',
-                    calendarBackground: '#FFF7ED',
-                    selectedDayBackgroundColor: formStep === 'pick_date' ? '#FB923C' : '#22C55E',
-                    todayTextColor: '#FB923C',
-                    arrowColor: '#FB923C',
+                    backgroundColor: COLORS.cream,
+                    calendarBackground: COLORS.cream,
+                    selectedDayBackgroundColor: formStep === 'pick_date' ? COLORS.clay : COLORS.success,
+                    todayTextColor: COLORS.clay,
+                    arrowColor: COLORS.clay,
                     textDayFontWeight: '600',
                     textMonthFontWeight: '800',
                   }}
@@ -349,16 +341,16 @@ export default function Health() {
 
       <View style={styles.header}>
         <View style={styles.titleRow}>
-          <Syringe size={20} color="#431407" />
+          <Syringe size={20} color={COLORS.ink} />
           <Text style={styles.title}>Sağlık Takibi</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 8 }}>
           <TouchableOpacity style={[styles.vetButton, styles.iconRow, styles.iconRowCenter]} onPress={findNearbyVet}>
-            <Stethoscope size={13} color="#FB923C" />
+            <Stethoscope size={13} color={COLORS.clay} />
             <Text style={styles.vetButtonText}>Vet Bul</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[styles.addButton, styles.iconRow, styles.iconRowCenter]} onPress={openModal}>
-            <Plus size={14} color="white" strokeWidth={3} />
+            <Plus size={14} color={COLORS.white} strokeWidth={3} />
             <Text style={styles.addButtonText}>Ekle</Text>
           </TouchableOpacity>
         </View>
@@ -366,11 +358,11 @@ export default function Health() {
 
       <View style={styles.viewToggle}>
         <TouchableOpacity style={[styles.toggleBtn, styles.iconRow, styles.iconRowCenter, view === 'list' && styles.toggleBtnActive]} onPress={() => setView('list')}>
-          <List size={14} color={view === 'list' ? 'white' : '#9A6B4B'} />
+          <List size={14} color={view === 'list' ? COLORS.white : COLORS.sand} />
           <Text style={[styles.toggleText, view === 'list' && styles.toggleTextActive]}>Liste</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[styles.toggleBtn, styles.iconRow, styles.iconRowCenter, view === 'calendar' && styles.toggleBtnActive]} onPress={() => setView('calendar')}>
-          <CalendarIcon size={14} color={view === 'calendar' ? 'white' : '#9A6B4B'} />
+          <CalendarIcon size={14} color={view === 'calendar' ? COLORS.white : COLORS.sand} />
           <Text style={[styles.toggleText, view === 'calendar' && styles.toggleTextActive]}>Takvim</Text>
         </TouchableOpacity>
       </View>
@@ -383,7 +375,7 @@ export default function Health() {
               style={[styles.categoryChip, styles.chipIconRow, categoryFilter === cat.value && styles.categoryChipActive]}
               onPress={() => setCategoryFilter(cat.value)}
             >
-              {cat.Icon ? <cat.Icon size={13} color={categoryFilter === cat.value ? 'white' : '#9A6B4B'} /> : null}
+              {cat.Icon ? <cat.Icon size={13} color={categoryFilter === cat.value ? COLORS.white : COLORS.sand} /> : null}
               <Text style={[styles.chipText, categoryFilter === cat.value && styles.chipTextActive]}>{cat.label}</Text>
             </TouchableOpacity>
           ))}
@@ -395,23 +387,23 @@ export default function Health() {
           <Calendar
             markedDates={{
               ...markedDates,
-              ...(selectedDate ? { [selectedDate]: { ...markedDates[selectedDate], selected: true, selectedColor: '#FB923C' } } : {}),
+              ...(selectedDate ? { [selectedDate]: { ...markedDates[selectedDate], selected: true, selectedColor: COLORS.clay } } : {}),
             }}
             onDayPress={day => setSelectedDate(day.dateString)}
             theme={{
-              backgroundColor: '#FFF7ED', calendarBackground: '#FFF7ED',
-              selectedDayBackgroundColor: '#FB923C', todayTextColor: '#FB923C',
-              arrowColor: '#FB923C', dotColor: '#FB923C',
+              backgroundColor: COLORS.cream, calendarBackground: COLORS.cream,
+              selectedDayBackgroundColor: COLORS.clay, todayTextColor: COLORS.clay,
+              arrowColor: COLORS.clay, dotColor: COLORS.clay,
               textDayFontWeight: '600', textMonthFontWeight: '800',
             }}
           />
           <View style={styles.legendRow}>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#FB923C' }]} />
+              <View style={[styles.legendDot, { backgroundColor: COLORS.clay }]} />
               <Text style={styles.legendText}>Kayıt tarihi</Text>
             </View>
             <View style={styles.legendItem}>
-              <View style={[styles.legendDot, { backgroundColor: '#22C55E' }]} />
+              <View style={[styles.legendDot, { backgroundColor: COLORS.success }]} />
               <Text style={styles.legendText}>Sonraki randevu</Text>
             </View>
           </View>
@@ -424,11 +416,11 @@ export default function Health() {
                   <View key={item.id} style={styles.card}>
                     <View style={styles.cardHeader}>
                       <View style={[styles.typeTag, styles.iconRow]}>
-                        <TypeIcon size={12} color="#FB923C" />
+                        <TypeIcon size={12} color={COLORS.clay} />
                         <Text style={styles.typeTagText}>{typeLabel(item.record_type)}</Text>
                       </View>
                       <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                        <Trash2 size={16} color="#DC2626" />
+                        <Trash2 size={16} color={COLORS.danger} />
                       </TouchableOpacity>
                     </View>
                     <Text style={styles.cardTitle}>{item.title}</Text>
@@ -437,7 +429,7 @@ export default function Health() {
                 );
               })}
               <TouchableOpacity style={[styles.addForDateButton, styles.iconRow, styles.iconRowCenter]} onPress={() => openModalForDate(selectedDate)}>
-                <Plus size={14} color="white" strokeWidth={3} />
+                <Plus size={14} color={COLORS.white} strokeWidth={3} />
                 <Text style={styles.addForDateButtonText}>Bu Tarihe Kayıt Ekle</Text>
               </TouchableOpacity>
             </View>
@@ -445,7 +437,7 @@ export default function Health() {
             <View style={{ marginTop: 12, alignItems: 'center' }}>
               <Text style={styles.noRecordText}>Bu tarihte kayıt yok.</Text>
               <TouchableOpacity style={[styles.addForDateButton, styles.iconRow, styles.iconRowCenter]} onPress={() => openModalForDate(selectedDate)}>
-                <Plus size={14} color="white" strokeWidth={3} />
+                <Plus size={14} color={COLORS.white} strokeWidth={3} />
                 <Text style={styles.addForDateButtonText}>Bu Tarihe Kayıt Ekle</Text>
               </TouchableOpacity>
             </View>
@@ -456,18 +448,20 @@ export default function Health() {
           (() => {
             const EmptyIcon = typeIcon(categoryFilter);
             return (
-              <View style={styles.emptyCategoryState}>
-                <View style={styles.emptyCategoryIconWrap}>
-                  <EmptyIcon size={32} color="#FB923C" />
+              <View style={styles.emptyCategoryWrap}>
+                <View style={styles.emptyCategoryState}>
+                  <View style={styles.emptyCategoryIconWrap}>
+                    <EmptyIcon size={32} color={COLORS.clay} />
+                  </View>
+                  <Text style={styles.emptyText}>
+                    {categoryFilter === 'all' ? 'Henüz sağlık kaydı yok.' : `Henüz ${typeLabel(categoryFilter)} kaydı yok.`}
+                  </Text>
+                  <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
+                  <TouchableOpacity style={[styles.emptyButton, styles.iconRow, styles.iconRowCenter]} onPress={() => openModalForCategory(categoryFilter)}>
+                    <Plus size={15} color={COLORS.white} strokeWidth={3} />
+                    <Text style={styles.emptyButtonText}>+ Ekle</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.emptyText}>
-                  {categoryFilter === 'all' ? 'Henüz sağlık kaydı yok.' : `Henüz ${typeLabel(categoryFilter)} kaydı yok.`}
-                </Text>
-                <Text style={styles.emptySubtext}>Aşı, kontrol ve ilaç bilgilerini buradan takip edebilirsin.</Text>
-                <TouchableOpacity style={[styles.emptyButton, styles.iconRow, styles.iconRowCenter]} onPress={() => openModalForCategory(categoryFilter)}>
-                  <Plus size={15} color="white" strokeWidth={3} />
-                  <Text style={styles.emptyButtonText}>+ Ekle</Text>
-                </TouchableOpacity>
               </View>
             );
           })()
@@ -482,21 +476,21 @@ export default function Health() {
                 <View style={styles.card}>
                   <View style={styles.cardHeader}>
                     <View style={[styles.typeTag, styles.iconRow]}>
-                      <TypeIcon size={12} color="#FB923C" />
+                      <TypeIcon size={12} color={COLORS.clay} />
                       <Text style={styles.typeTagText}>{typeLabel(item.record_type)}</Text>
                     </View>
                     <TouchableOpacity onPress={() => handleDelete(item.id)}>
-                      <Trash2 size={16} color="#DC2626" />
+                      <Trash2 size={16} color={COLORS.danger} />
                     </TouchableOpacity>
                   </View>
                   <Text style={styles.cardTitle}>{item.title}</Text>
                   <View style={[styles.iconRow, { marginBottom: 2 }]}>
-                    <CalendarIcon size={12} color="#9A6B4B" />
+                    <CalendarIcon size={12} color={COLORS.sand} />
                     <Text style={styles.dateText}>{formatDate(item.date)}</Text>
                   </View>
                   {item.next_date ? (
                     <View style={[styles.iconRow, { marginBottom: 2 }]}>
-                      <Bell size={12} color="#FB923C" />
+                      <Bell size={12} color={COLORS.clay} />
                       <Text style={styles.nextDateText}>Sonraki: {formatDate(item.next_date)}</Text>
                     </View>
                   ) : null}
@@ -512,71 +506,72 @@ export default function Health() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64 },
+  container: { flex: 1, backgroundColor: COLORS.cream, padding: 20, paddingTop: 64 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  title: { fontSize: 22, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
+  title: { fontSize: 22, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
   iconRow: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   iconRowCenter: { justifyContent: 'center' },
-  vetButton: { backgroundColor: '#FFEDD5', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: '#FED7AA' },
-  vetButtonText: { color: '#FB923C', fontWeight: '800', fontSize: 12 },
-  addButton: { backgroundColor: '#FB923C', borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
-  addButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  viewToggle: { flexDirection: 'row', backgroundColor: 'white', borderRadius: 14, padding: 4, marginBottom: 12, borderWidth: 1, borderColor: '#FED7AA' },
+  vetButton: { backgroundColor: COLORS.peach, borderRadius: 12, paddingHorizontal: 12, paddingVertical: 8, borderWidth: 1, borderColor: COLORS.border },
+  vetButtonText: { color: COLORS.clay, fontWeight: '800', fontSize: 12 },
+  addButton: { backgroundColor: COLORS.clay, borderRadius: 12, paddingHorizontal: 14, paddingVertical: 8 },
+  addButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
+  viewToggle: { flexDirection: 'row', backgroundColor: COLORS.white, borderRadius: 14, padding: 4, marginBottom: 12, borderWidth: 1, borderColor: COLORS.border },
   toggleBtn: { flex: 1, paddingVertical: 8, borderRadius: 10, alignItems: 'center' },
-  toggleBtnActive: { backgroundColor: '#FB923C' },
-  toggleText: { fontSize: 13, fontWeight: '700', color: '#9A6B4B' },
-  toggleTextActive: { color: 'white' },
+  toggleBtnActive: { backgroundColor: COLORS.clay },
+  toggleText: { fontSize: 13, fontWeight: '700', color: COLORS.sand },
+  toggleTextActive: { color: COLORS.white },
   categoryScroll: { marginBottom: 12 },
   categoryRow: { gap: 8, paddingRight: 8 },
-  categoryChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
-  categoryChipActive: { backgroundColor: TEAL, borderColor: TEAL },
+  categoryChip: { paddingHorizontal: 12, paddingVertical: 7, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  categoryChipActive: { backgroundColor: COLORS.teal, borderColor: COLORS.teal },
   legendRow: { flexDirection: 'row', gap: 16, paddingHorizontal: 8, marginTop: 8, marginBottom: 4 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   legendDot: { width: 10, height: 10, borderRadius: 5 },
-  legendText: { fontSize: 11, color: '#9A6B4B' },
-  selectedDateTitle: { fontSize: 13, fontWeight: '800', color: '#431407', marginBottom: 8 },
-  noRecordText: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginTop: 16 },
-  addForDateButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 10, paddingHorizontal: 20, marginTop: 12, alignSelf: 'center' },
-  addForDateButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  emptyCategoryState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  legendText: { fontSize: 11, color: COLORS.sand },
+  selectedDateTitle: { fontSize: 13, fontWeight: '800', color: COLORS.ink, marginBottom: 8 },
+  noRecordText: { fontSize: 13, color: COLORS.sand, textAlign: 'center', marginTop: 16 },
+  addForDateButton: { backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 10, paddingHorizontal: 20, marginTop: 12, alignSelf: 'center' },
+  addForDateButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
+  emptyCategoryWrap: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyCategoryState: { alignItems: 'center', alignSelf: 'center' },
   emptyCategoryIconWrap: {
-    width: 64, height: 64, borderRadius: 32, backgroundColor: '#FFEDD5',
+    width: 64, height: 64, borderRadius: 32, backgroundColor: COLORS.peach,
     alignItems: 'center', justifyContent: 'center', marginBottom: 16,
   },
-  emptyText: { fontSize: 16, fontWeight: '700', color: '#431407', marginBottom: 8, textAlign: 'center' },
-  emptySubtext: { fontSize: 13, color: '#9A6B4B', textAlign: 'center', marginBottom: 20, maxWidth: 260 },
-  emptyButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
-  emptyButtonText: { color: 'white', fontWeight: '800' },
-  card: { backgroundColor: 'white', borderRadius: 16, padding: 16, marginBottom: 12, ...CARD_SHADOW },
+  emptyText: { fontSize: 16, fontWeight: '700', color: COLORS.ink, marginBottom: 8, textAlign: 'center' },
+  emptySubtext: { fontSize: 13, color: COLORS.sand, textAlign: 'center', marginBottom: 20, maxWidth: 260 },
+  emptyButton: { backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24, alignSelf: 'center' },
+  emptyButtonText: { color: COLORS.white, fontWeight: '800' },
+  card: { backgroundColor: COLORS.white, borderRadius: 16, padding: 16, marginBottom: 12, ...SHADOW },
   cardHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
-  typeTag: { backgroundColor: '#FFEDD5', paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
-  typeTagText: { color: '#FB923C', fontSize: 11, fontWeight: '800' },
-  cardTitle: { fontSize: 15, fontWeight: '800', color: '#431407', marginBottom: 6 },
-  dateText: { fontSize: 12, color: '#9A6B4B' },
-  nextDateText: { fontSize: 12, color: '#FB923C', fontWeight: '700' },
-  notesText: { fontSize: 12, color: '#5C4033', marginTop: 6, lineHeight: 18 },
-  datePickerButton: { backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA', paddingHorizontal: 14, paddingVertical: 12 },
+  typeTag: { backgroundColor: COLORS.peach, paddingHorizontal: 10, paddingVertical: 4, borderRadius: 8 },
+  typeTagText: { color: COLORS.clay, fontSize: 11, fontWeight: '800' },
+  cardTitle: { fontSize: 15, fontWeight: '800', color: COLORS.ink, marginBottom: 6 },
+  dateText: { fontSize: 12, color: COLORS.sand },
+  nextDateText: { fontSize: 12, color: COLORS.clay, fontWeight: '700' },
+  notesText: { fontSize: 12, color: COLORS.body, marginTop: 6, lineHeight: 18 },
+  datePickerButton: { backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 14, paddingVertical: 12 },
   datePickerButtonRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  datePickerAuto: { backgroundColor: '#FFEDD5', borderColor: '#FED7AA' },
-  dateSelected: { fontSize: 13, color: '#431407', fontWeight: '700' },
-  datePlaceholder: { fontSize: 13, color: '#9A6B4B' },
+  datePickerAuto: { backgroundColor: COLORS.peach, borderColor: COLORS.border },
+  dateSelected: { fontSize: 13, color: COLORS.ink, fontWeight: '700' },
+  datePlaceholder: { fontSize: 13, color: COLORS.sand },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#FFF7ED', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
-  modalTitle: { fontSize: 20, fontWeight: '800', color: '#431407', marginBottom: 16 },
-  fieldLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginTop: 14, marginBottom: 6 },
+  modalContent: { backgroundColor: COLORS.cream, borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, maxHeight: '90%' },
+  modalTitle: { fontSize: 20, fontWeight: '800', color: COLORS.ink, marginBottom: 16 },
+  fieldLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
-  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
+  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
   chipIconRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
-  chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
-  chipTextActive: { color: 'white' },
-  input: { backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA', paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, color: '#431407' },
-  errorText: { color: '#DC2626', fontSize: 12, marginTop: 10 },
+  chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
+  chipText: { fontSize: 12, fontWeight: '700', color: COLORS.sand },
+  chipTextActive: { color: COLORS.white },
+  input: { backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, color: COLORS.ink },
+  errorText: { color: COLORS.danger, fontSize: 12, marginTop: 10 },
   modalActions: { flexDirection: 'row', gap: 10, marginTop: 20, marginBottom: 10 },
-  cancelButton: { flex: 1, borderWidth: 2, borderColor: '#FED7AA', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  cancelButtonText: { color: '#9A6B4B', fontWeight: '800' },
-  saveButton: { flex: 1, backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
-  saveButtonText: { color: 'white', fontWeight: '800' },
+  cancelButton: { flex: 1, borderWidth: 2, borderColor: COLORS.border, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  cancelButtonText: { color: COLORS.sand, fontWeight: '800' },
+  saveButton: { flex: 1, backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, alignItems: 'center' },
+  saveButtonText: { color: COLORS.white, fontWeight: '800' },
 });

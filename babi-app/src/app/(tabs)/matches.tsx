@@ -3,14 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet, Image, ScrollView, ActivityIn
 import { useRouter } from 'expo-router';
 import { Heart, MoreVertical } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 type MatchItem = {
   matchId: string;
@@ -175,7 +168,7 @@ export default function Matches() {
   if (loading) {
     return (
       <View style={styles.center}>
-        <ActivityIndicator size="large" color="#FB923C" />
+        <ActivityIndicator size="large" color={COLORS.clay} />
       </View>
     );
   }
@@ -186,7 +179,7 @@ export default function Matches() {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.titleRow}>
-        <Heart size={22} color="#FB923C" fill="#FB923C" />
+        <Heart size={22} color={COLORS.clay} fill={COLORS.clay} />
         <Text style={styles.title}>Eşleşmeler</Text>
       </View>
 
@@ -234,7 +227,7 @@ export default function Matches() {
                   </View>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.menuButton} onPress={() => showOptions(item)}>
-                  <MoreVertical size={20} color="#9A6B4B" />
+                  <MoreVertical size={20} color={COLORS.sand} />
                 </TouchableOpacity>
               </View>
             ))
@@ -246,31 +239,31 @@ export default function Matches() {
 }
 
 const styles = StyleSheet.create({
-  container: { flexGrow: 1, backgroundColor: '#FFF7ED', padding: 20, paddingTop: 64, paddingBottom: 40 },
+  container: { flexGrow: 1, backgroundColor: COLORS.cream, padding: 20, paddingTop: 64, paddingBottom: 40 },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingTop: 64 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
-  emptyText: { fontSize: 14, color: '#9A6B4B' },
-  sectionLabel: { fontSize: 10, fontWeight: '800', color: '#9A6B4B', letterSpacing: 1, marginBottom: 10 },
+  title: { fontSize: 24, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
+  emptyText: { fontSize: 14, color: COLORS.sand },
+  sectionLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginBottom: 10 },
   newMatchesSection: { marginBottom: 24 },
   storyRow: { gap: 14, paddingRight: 8 },
   storyItem: { alignItems: 'center', width: 70 },
   storyRing: {
-    width: 66, height: 66, borderRadius: 33, borderWidth: 3, borderColor: '#FB923C',
+    width: 66, height: 66, borderRadius: 33, borderWidth: 3, borderColor: COLORS.clay,
     alignItems: 'center', justifyContent: 'center', padding: 2,
   },
   storyAvatar: { width: 56, height: 56, borderRadius: 28 },
-  storyName: { fontSize: 11, fontWeight: '700', color: '#431407', marginTop: 6, textAlign: 'center' },
-  emptyConversationsText: { fontSize: 13, color: '#9A6B4B', lineHeight: 19 },
+  storyName: { fontSize: 11, fontWeight: '700', color: COLORS.ink, marginTop: 6, textAlign: 'center' },
+  emptyConversationsText: { fontSize: 13, color: COLORS.sand, lineHeight: 19 },
   row: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: 'rgba(255,255,255,0.87)',
-    borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW,
+    borderRadius: 16, padding: 12, marginBottom: 10, ...SHADOW,
   },
   rowMain: { flex: 1, flexDirection: 'row', alignItems: 'center' },
   avatar: { width: 50, height: 50, borderRadius: 25, marginRight: 12 },
-  noAvatar: { backgroundColor: '#FFEDD5' },
+  noAvatar: { backgroundColor: COLORS.peach },
   rowTextWrap: { flex: 1, marginRight: 8 },
-  name: { fontSize: 16, fontWeight: '700', color: '#431407' },
-  preview: { fontSize: 12, color: '#9A6B4B', marginTop: 2 },
+  name: { fontSize: 16, fontWeight: '700', color: COLORS.ink },
+  preview: { fontSize: 12, color: COLORS.sand, marginTop: 2 },
   menuButton: { paddingHorizontal: 12, paddingVertical: 8 },
 });

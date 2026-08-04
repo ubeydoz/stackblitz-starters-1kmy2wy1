@@ -4,16 +4,7 @@ import { useRouter, useFocusEffect } from 'expo-router';
 import * as Location from 'expo-location';
 import { Search, Building2, Scissors, Dog, Stethoscope, ImageOff, Star, LucideIcon } from 'lucide-react-native';
 import { supabase } from '../../../lib/supabase';
-
-const MOSS = '#6B8F71';
-const TEAL = '#0891A6';
-const CARD_SHADOW = {
-  shadowColor: '#000',
-  shadowOffset: { width: 0, height: 4 },
-  shadowOpacity: 0.08,
-  shadowRadius: 12,
-  elevation: 3,
-};
+import { COLORS, SHADOW } from '../../../lib/theme';
 
 const TYPE_OPTIONS: { key: string | null; label: string; Icon: LucideIcon | null }[] = [
   { key: null, label: 'Tümü', Icon: null },
@@ -105,7 +96,7 @@ export default function DiscoverBusinesses() {
       </TouchableOpacity>
 
       <View style={styles.titleRow}>
-        <Search size={20} color="#431407" />
+        <Search size={20} color={COLORS.ink} />
         <Text style={styles.title}>İşletmeleri Keşfet</Text>
       </View>
 
@@ -125,7 +116,7 @@ export default function DiscoverBusinesses() {
             style={[styles.chip, styles.typeChip, filterType === t.key && styles.typeChipActive]}
             onPress={() => setFilterType(t.key)}
           >
-            {t.Icon ? <t.Icon size={13} color={filterType === t.key ? 'white' : '#9A6B4B'} /> : null}
+            {t.Icon ? <t.Icon size={13} color={filterType === t.key ? COLORS.white : COLORS.sand} /> : null}
             <Text style={[styles.chipText, filterType === t.key && styles.chipTextActive]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
@@ -145,7 +136,7 @@ export default function DiscoverBusinesses() {
 
       {loading ? (
         <View style={styles.centerContainer}>
-          <ActivityIndicator size="large" color="#FB923C" />
+          <ActivityIndicator size="large" color={COLORS.clay} />
         </View>
       ) : error ? (
         <View style={styles.centerContainer}>
@@ -172,7 +163,7 @@ export default function DiscoverBusinesses() {
                 <Image source={{ uri: item.photoUrl }} style={styles.cardPhoto} />
               ) : (
                 <View style={[styles.cardPhoto, styles.cardPhotoEmpty]}>
-                  <ImageOff size={20} color="#FB923C" />
+                  <ImageOff size={20} color={COLORS.clay} />
                 </View>
               )}
               <View style={styles.cardInfo}>
@@ -182,7 +173,7 @@ export default function DiscoverBusinesses() {
                   {item.review_count > 0 ? (
                     <View style={styles.cardMetaRow}>
                       <Text style={styles.cardMeta}> · </Text>
-                      <Star size={11} color={MOSS} fill={MOSS} />
+                      <Star size={11} color={COLORS.moss} fill={COLORS.moss} />
                       <Text style={styles.cardMetaMoss}> {item.avg_rating.toFixed(1)} ({item.review_count})</Text>
                     </View>
                   ) : (
@@ -200,35 +191,35 @@ export default function DiscoverBusinesses() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FFF7ED', paddingTop: 64, paddingHorizontal: 20 },
+  container: { flex: 1, backgroundColor: COLORS.cream, paddingTop: 64, paddingHorizontal: 20 },
   backButton: { marginBottom: 8 },
-  backButtonText: { color: '#FB923C', fontWeight: '700', fontSize: 14 },
+  backButtonText: { color: COLORS.clay, fontWeight: '700', fontSize: 14 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 16 },
-  title: { fontSize: 22, fontWeight: '800', color: '#431407', fontFamily: 'Fredoka_700Bold' },
+  title: { fontSize: 22, fontWeight: '800', color: COLORS.ink, fontFamily: 'Fredoka_700Bold' },
   searchInput: {
-    backgroundColor: 'white', borderRadius: 14, borderWidth: 1, borderColor: '#FED7AA',
-    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: '#431407', marginBottom: 12,
+    backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border,
+    paddingHorizontal: 14, paddingVertical: 12, fontSize: 14, color: COLORS.ink, marginBottom: 12,
   },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
-  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: '#FED7AA', backgroundColor: 'white' },
-  chipActive: { backgroundColor: '#FB923C', borderColor: '#FB923C' },
+  chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
   typeChip: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  typeChipActive: { backgroundColor: TEAL, borderColor: TEAL },
-  chipText: { fontSize: 12, fontWeight: '700', color: '#9A6B4B' },
-  chipTextActive: { color: 'white' },
+  typeChipActive: { backgroundColor: COLORS.teal, borderColor: COLORS.teal },
+  chipText: { fontSize: 12, fontWeight: '700', color: COLORS.sand },
+  chipTextActive: { color: COLORS.white },
   centerContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingBottom: 100 },
-  errorText: { fontSize: 13, color: '#DC2626', textAlign: 'center', marginBottom: 12 },
-  retryButton: { backgroundColor: '#FB923C', borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24 },
-  retryButtonText: { color: 'white', fontWeight: '800', fontSize: 13 },
-  emptyText: { fontSize: 14, color: '#9A6B4B', textAlign: 'center' },
+  errorText: { fontSize: 13, color: COLORS.danger, textAlign: 'center', marginBottom: 12 },
+  retryButton: { backgroundColor: COLORS.clay, borderRadius: 14, paddingVertical: 12, paddingHorizontal: 24, alignSelf: 'center' },
+  retryButtonText: { color: COLORS.white, fontWeight: '800', fontSize: 13 },
+  emptyText: { fontSize: 14, color: COLORS.sand, textAlign: 'center' },
   list: { paddingBottom: 40 },
-  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: 'white', borderRadius: 16, padding: 12, marginBottom: 10, ...CARD_SHADOW },
+  card: { flexDirection: 'row', alignItems: 'center', backgroundColor: COLORS.white, borderRadius: 16, padding: 12, marginBottom: 10, ...SHADOW },
   cardPhoto: { width: 64, height: 64, borderRadius: 12 },
-  cardPhotoEmpty: { backgroundColor: '#FFEDD5', alignItems: 'center', justifyContent: 'center' },
+  cardPhotoEmpty: { backgroundColor: COLORS.peach, alignItems: 'center', justifyContent: 'center' },
   cardInfo: { flex: 1, marginLeft: 12 },
-  cardName: { fontSize: 15, fontWeight: '800', color: '#431407' },
+  cardName: { fontSize: 15, fontWeight: '800', color: COLORS.ink },
   cardMetaRow: { flexDirection: 'row', alignItems: 'center', marginTop: 3 },
-  cardMeta: { fontSize: 12, color: '#FB923C', fontWeight: '700' },
-  cardMetaMoss: { fontSize: 12, color: MOSS, fontWeight: '700' },
-  cardAddress: { fontSize: 12, color: '#9A6B4B', marginTop: 3 },
+  cardMeta: { fontSize: 12, color: COLORS.clay, fontWeight: '700' },
+  cardMetaMoss: { fontSize: 12, color: COLORS.moss, fontWeight: '700' },
+  cardAddress: { fontSize: 12, color: COLORS.sand, marginTop: 3 },
 });
