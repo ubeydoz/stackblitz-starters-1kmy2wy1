@@ -248,16 +248,16 @@ export default function Health() {
                 </View>
 
                 <Text style={styles.fieldLabel}>TÜR</Text>
-                <View style={styles.chipRow}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRowScroll}>
                   {HEALTH_ITEMS.map(item => (
                     <TouchableOpacity key={item.key}
-                      style={[styles.chip, styles.chipIconRow, newItemKey === item.key && styles.chipActive]}
+                      style={[styles.chipCompact, styles.chipIconRow, newItemKey === item.key && styles.chipActive]}
                       onPress={() => selectHealthItem(item)}>
-                      <item.Icon size={14} color={newItemKey === item.key ? COLORS.white : COLORS.sand} />
-                      <Text style={[styles.chipText, newItemKey === item.key && styles.chipTextActive]}>{item.label}</Text>
+                      <item.Icon size={12} color={newItemKey === item.key ? COLORS.white : COLORS.sand} />
+                      <Text style={[styles.chipTextCompact, newItemKey === item.key && styles.chipTextActive]}>{item.label}</Text>
                     </TouchableOpacity>
                   ))}
-                </View>
+                </ScrollView>
 
                 {needsCustomTitle ? (
                   <>
@@ -572,10 +572,16 @@ const styles = StyleSheet.create({
   modalDoneText: { fontSize: 13, fontWeight: '800', color: COLORS.teal },
   fieldLabel: { fontSize: 10, fontWeight: '800', color: COLORS.sand, letterSpacing: 1, marginTop: 14, marginBottom: 6 },
   chipRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  chipRowScroll: { gap: 6, paddingRight: 8 },
   chip: { paddingHorizontal: 12, paddingVertical: 8, borderRadius: 12, borderWidth: 1, borderColor: COLORS.border, backgroundColor: COLORS.white },
+  chipCompact: {
+    height: 30, paddingHorizontal: 10, borderRadius: 15, borderWidth: 1,
+    borderColor: COLORS.border, backgroundColor: COLORS.white, justifyContent: 'center',
+  },
   chipIconRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
   chipActive: { backgroundColor: COLORS.clay, borderColor: COLORS.clay },
   chipText: { fontSize: 12, fontWeight: '700', color: COLORS.sand },
+  chipTextCompact: { fontSize: 11, fontWeight: '700', color: COLORS.sand },
   chipTextActive: { color: COLORS.white },
   input: { backgroundColor: COLORS.white, borderRadius: 14, borderWidth: 1, borderColor: COLORS.border, paddingHorizontal: 14, paddingVertical: 10, fontSize: 13, color: COLORS.ink },
   errorText: { color: COLORS.danger, fontSize: 12, marginTop: 10 },
